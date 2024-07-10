@@ -18,7 +18,7 @@ import { Box,
          NumberDecrementStepper,
          Flex,
          useToast} from '@chakra-ui/react';
-import { database } from "../firebase-config";
+import { auth, database } from "../firebase-config";
 
 export const AddTutPost = () => {
     const [title, setTitle] = useState('');
@@ -31,37 +31,43 @@ export const AddTutPost = () => {
 
     const handleSubmit = async(e) => {
       e.preventDefault();
-      try {
-        const docRef = await addDoc(collection(database, "groupPost"), {
-          Title: title,
-          Description: description,
-          Location: location,
-          Date: Timestamp.fromDate(date),
-          Number: parseFloat(number),
-          docID: "",
-          Joined: 0
-        });
-        const docInfo = docRef.id;
-        await updateDoc(docRef, { docID: docInfo});
-        console.log("Document successfully written!");
+      const user = auth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        try {
+          const docRef = await addDoc(collection(database, "groupPost"), {
+            uid: uid,
+            Title: title,
+            Description: description,
+            Location: location,
+            Date: Timestamp.fromDate(date),
+            Number: parseFloat(number),
+            docID: "",
+            Joined: 0
+          });
+          const docInfo = docRef.id;
+          await updateDoc(docRef, { docID: docInfo});
+          console.log("Document successfully written!");
+          
+          toast({
+            title: "Post created.",
+            description: "Your post has been successfully created.",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+  
+          setTitle('');
+          setDescription('');
+          setLocation('');
+          setDate('');
+          setNumber(0);
+  
+          navigate('/home');
+        } catch (error) {
+          console.error("Error writing document: ", error);
+        }
         
-        toast({
-          title: "Post created.",
-          description: "Your post has been successfully created.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
-
-        setTitle('');
-        setDescription('');
-        setLocation('');
-        setDate('');
-        setNumber(0);
-
-        navigate('/home');
-      } catch (error) {
-        console.error("Error writing document: ", error);
       }
       
     }

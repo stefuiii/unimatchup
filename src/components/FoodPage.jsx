@@ -101,8 +101,6 @@ const ShowPosts = ({post}) => {
       </CardFooter>
     </Card>
     );
-    
-
 }
 
 export const ShowFood = () => {
