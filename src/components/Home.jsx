@@ -94,6 +94,10 @@ export const Home = () =>  {
     navigate('/createprofile');
   }
 
+  const handleChatClick = () => {
+    navigate('/chatsoverview');
+  }
+
   
   useEffect(() => {
     const getNickName = async () => {
@@ -123,7 +127,7 @@ export const Home = () =>  {
       <Button bg={'none'} mb={5}>
       <img src={profile} alt="Avatar" width="30" height="30"/>
       </Button>
-      <ChatIcon boxSize={6} mb={7} color={'white'}/>
+      <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
       <Button
           onClick={() => handleClick('sm')}
           key={'sm'}

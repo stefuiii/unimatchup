@@ -58,7 +58,7 @@ export const Guide = () =>  {
       </Heading>
         <ButtonGroup spacing={50}>
           <Button variant='solid' colorScheme='blue'
-          onClick={handleProfile} borderRadius={'10'} width={180}>I‘m a new user</Button>
+          onClick={handleProfile} borderRadius={'10'} width={180}>I'm a new user</Button>
           <Button variant='ghost' colorScheme='blue'
           onClick={handleHome} bg={'white'} borderRadius={'10'}>I've been your buddy</Button>
         </ButtonGroup>
