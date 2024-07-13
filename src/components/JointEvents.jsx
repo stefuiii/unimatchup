@@ -15,8 +15,6 @@ import { Box, Heading, FormControl, FormLabel, Button,
 import { CalendarIcon, InfoIcon, SearchIcon, PhoneIcon } from "@chakra-ui/icons";
 import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
-import postAvatar from "../icons/avatar13.svg"
-import grabHeading from "../icons/打车场景.svg"
 
 const ShowPosts = ({post}) => {
     const date = post.Date.toDate().toLocaleString();

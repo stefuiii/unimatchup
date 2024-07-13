@@ -5,18 +5,25 @@ import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
          HStack, InputGroup, InputLeftElement,
          ChakraProvider, Input,
-         Flex, useToast} from "@chakra-ui/react";
+         Flex, useToast, useDisclosure } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import postAvatar from "../icons/avatar13.svg"
 import foodHeading from "../icons/一起吃饭.svg"
+import EventDetailsModal from "./EventDetailsModal.jsx";
 
 const ShowPosts = ({post}) => {
   const [added, setAdded] = useState(post.Joined);
   const user = auth.currentUser;
   const date = post.Date.toDate().toLocaleString();
   const toast = useToast();
+
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
 
   const handleAddedMember = async() => {
     try {
@@ -94,9 +101,12 @@ const ShowPosts = ({post}) => {
           variant='solid' colorScheme='blue' fontSize="xs">
             Join Us({added}/{post.Number})
           </Button>
-          <Button variant='ghost' colorScheme='blue' fontSize="xs">
+          <>
+          <Button onClick={onModalOpen} variant='ghost' colorScheme='blue' fontSize="xs">
             View Event Details
           </Button>
+          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
+          </>
         </ButtonGroup>
       </CardFooter>
     </Card>

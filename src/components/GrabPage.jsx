@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
-import { Link, useNavigate } from "react-router-dom";
 import { auth, database } from "../firebase-config.js";
 import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion} from "firebase/firestore";
 import { Box, Heading, Button, 
@@ -9,13 +8,13 @@ import { Box, Heading, Button,
          InputGroup,
          InputLeftElement,
          ChakraProvider,
-         Input, Flex, 
-         useControllableState} from "@chakra-ui/react";
+         Input, Flex } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useToast } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useToast, useDisclosure } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
-import postAvatar from "../icons/avatar13.svg"
 import grabHeading from "../icons/打车场景.svg"
+import EventDetailsModal from "./EventDetailsModal.jsx";
+
 
 const ShowPosts = ({post}) => {
     const [added, setAdded] = useState(post.Joined);
@@ -23,13 +22,38 @@ const ShowPosts = ({post}) => {
     const date = post.Date.toDate().toLocaleString();
     const toast = useToast();
 
+    const {
+      isOpen: isModalOpen,
+      onOpen: onModalOpen,
+      onClose: onModalClose
+    } = useDisclosure();
+
+    
+
     const handleAddedMember = async() => {
       try {
         const docRef = doc(database, 'postInfo', post.docID);
         const docCollect = await getDoc(docRef);
         const docData = docCollect.data();
 
-        if (user.uid == docData.uid){
+        const memberDocs = await Promise.all(docData.Members.map(memberRef => getDoc(memberRef)));
+        const isUserAlreadyJoined = memberDocs.some(memberDoc => {
+        console.log("Checking member ID:", memberDoc.data().uid, "against user ID:", user.uid); // Debugging log
+        return memberDoc.data().uid === user.uid;
+        });
+
+        if (isUserAlreadyJoined) {
+          toast({
+            title: "Join Failed",
+            description: "You have already joined this event",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        if (user.uid === docData.uid){
           toast({
             title: "Join Failed",
             description: "You cannot join your event ",
@@ -42,10 +66,12 @@ const ShowPosts = ({post}) => {
           const newlyAdded = docData.Joined + 1;
           setAdded(newlyAdded);
           await updateDoc(docRef, {Joined: newlyAdded});
-
           const userProfileRef = doc(database, 'userProfile', user.uid);
           await updateDoc(userProfileRef, {
             events: arrayUnion(docRef)
+          });
+          await updateDoc(docRef, {
+            Members: arrayUnion(userProfileRef)
           });
 
 
@@ -78,7 +104,6 @@ const ShowPosts = ({post}) => {
         <Stack mt='2' spacing='3'>
           <HStack spacing={100}>
             <Heading size='md'>{post.Title}</Heading>
-            <img src={postAvatar} alt="Avatar" width="50" height="50"/>
           </HStack>
           <Text className="one-line-description" fontSize="sm">
             {post.Description}
@@ -100,9 +125,12 @@ const ShowPosts = ({post}) => {
             variant='solid' colorScheme='blue' fontSize="xs">
             Join Us({added}/{post.Number})
           </Button>
-          <Button variant='ghost' colorScheme='blue' fontSize="xs">
+          <>
+          <Button onClick={onModalOpen} variant='ghost' colorScheme='blue' fontSize="xs">
             View Event Details
           </Button>
+          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
+          </>
         </ButtonGroup>
       </CardFooter>
     </Card>
@@ -116,6 +144,8 @@ export const ShowGrab = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const postsPerPage = 4;
+
+    
 
     useEffect (() => {
         const fetchPosts = async () => {

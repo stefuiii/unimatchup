@@ -9,11 +9,9 @@ import myAvatar from "../icons/avatar13.svg"
 import {
   Tag,
   TagLabel,
-  TagLeftIcon,
-  TagRightIcon,
   TagCloseButton,
 } from '@chakra-ui/react'
-import { Icon, AddIcon } from '@chakra-ui/icons'
+import { AddIcon } from '@chakra-ui/icons'
 
 export const CreateProfile = () => {
     const [uid] = useState('');

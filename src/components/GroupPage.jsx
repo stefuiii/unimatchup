@@ -1,21 +1,20 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 //import "./Registration.css";
-import { Link, useNavigate } from "react-router-dom";
 import { auth, database } from "../firebase-config.js";
-import { collection, addDoc, doc, setDoc, getDoc, getDocs, orderBy, query, updateDoc, arrayUnion} from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword} from "firebase/auth";
-import { Box, Heading, FormControl, FormLabel, Button, 
-         Stack, Text, Divider, ButtonGroup,
-         HStack, PostCard, 
+import { collection, doc, getDoc, getDocs, orderBy, query, updateDoc, arrayUnion} from "firebase/firestore";
+import { Box, Heading, Button, 
+         Stack, Text, ButtonGroup,
+         HStack,
          InputGroup,
          InputLeftElement,
          ChakraProvider,
          Input, Flex, useToast } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon, SearchIcon, PhoneIcon } from "@chakra-ui/icons";
-import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
+import { CalendarIcon, InfoIcon, SearchIcon} from "@chakra-ui/icons";
+import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import postAvatar from "../icons/avatar13.svg"
 import groupHeading from "../icons/工作汇报.svg"
+import EventDetailsModal from "./EventDetailsModal.jsx";
 
 const ShowPosts = ({post}) => {
   const [added, setAdded] = useState(post.Joined);
@@ -23,13 +22,19 @@ const ShowPosts = ({post}) => {
   const date = post.Date.toDate().toLocaleString();
   const toast = useToast();
 
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
+
   const handleAddedMember = async() => {
     try {
       const docRef = doc(database, 'groupPost', post.docID);
       const docCollect = await getDoc(docRef);
       const docData = docCollect.data();
 
-      if (user.uid == docData.uid){
+      if (user.uid === docData.uid){
         toast({
           title: "Join Failed",
           description: "You cannot join your event ",
@@ -99,9 +104,12 @@ const ShowPosts = ({post}) => {
           variant='solid' colorScheme='blue' fontSize="xs">
             Join Us({added}/{post.Number})
           </Button>
-          <Button variant='ghost' colorScheme='blue' fontSize="xs">
+          <>
+          <Button onClick={onModalOpen} variant='ghost' colorScheme='blue' fontSize="xs">
             View Event Details
           </Button>
+          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
+          </>
         </ButtonGroup>
       </CardFooter>
     </Card>

@@ -36,18 +36,71 @@ import sportIcon from "../icons/体育锻炼.svg"
 import groupIcon from "../icons/工作汇报.svg"
 import profile from "../icons/人员.svg"
 import { auth, database } from "../firebase-config"
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react'
 
 export const Home = () =>  {
   const [size, setSize] = React.useState('')
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
+
+  // 第二个 useDisclosure 钩子，用于管理第二个状态
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose
+  } = useDisclosure();
+
   const [nickName, setNickName] = useState('');
   const navigate = useNavigate();
   const user = auth.currentUser;
   const userID = user.uid;
+  
+
+  /*
+  const profileCard = async() => {
+    const profileRef = doc(database, "userProfile", userID);
+    const profileSnap = await getDoc(profileRef);
+    const profileDetail = profileSnap.data();
+
+    const name = profileDetail.firstName;
+    const nickName = profileDetail.nickName;
+    const hobbies = profileDetail.hobbies;
+
+    return (
+      <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>
+      <CardBody>
+        <Stack mt='2' spacing='3'>
+          <HStack spacing={100}>
+          </HStack>
+          <Text className="one-line-description" fontSize="sm">
+          Hi
+          </Text>
+      </Stack>
+      <HStack mt={'4'} spacing={'3'}>
+      </HStack>
+      <HStack mt={'3'} spacing={'3'}>
+      </HStack>
+      </CardBody>
+    </Card>
+    )
+
+  }
+    */
 
   const handleClick = (newSize) => {
     setSize(newSize)
-    onOpen()
+    onDrawerOpen()
   }
 
   const handleGrabClick = () => {
@@ -115,14 +168,54 @@ export const Home = () =>  {
       getNickName();
     }
     }, [userID]);
-  
+
+
 
   return (
     <ChakraProvider>
       <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
-      <Button bg={'none'} mb={5}>
+      <>
+      <Button onClick={onModalOpen} bg={'none'} mb={5}>
       <img src={profile} alt="Avatar" width="30" height="30"/>
       </Button>
+      <Modal isOpen={isModalOpen} onClose={onModalClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Your Profile</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+          <HStack>
+          <Heading size={'sm'}>
+            Name
+          </Heading>
+          <Text>Stephanie</Text>
+          </HStack>
+          <HStack>
+          <Heading size={'sm'}>
+            Nick Name
+          </Heading>
+          <Text>stefuiii</Text>
+          </HStack>
+          <HStack>
+          <Heading size={'sm'}>
+            Major
+          </Heading>
+          <Text>Computer Science</Text>
+          </HStack>
+          <HStack>
+          <Heading size={'sm'}>
+            Hobbies
+          </Heading>
+          </HStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={onModalClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      </>
       <ChatIcon boxSize={6} mb={7} color={'white'}/>
       <Button
           onClick={() => handleClick('sm')}
@@ -316,7 +409,7 @@ export const Home = () =>  {
       </HStack>  
       </Box>
       </Box>
-      <Drawer onClose={onClose} isOpen={isOpen} size={'sm'}>
+      <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
