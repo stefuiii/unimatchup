@@ -76,6 +76,10 @@ const EventDetailsModal = ({ isOpen, onClose, post }) => {
                           <Text>{orgData.firstName}</Text>
                         </HStack>
                         <HStack mb={3}>
+                          <Heading size={'sm'}>Gender</Heading>
+                          <Text>{orgData.Gender}</Text>
+                        </HStack>
+                        <HStack mb={3}>
                           <Heading size={'sm'}>Major</Heading>
                           <Text>{orgData.Major}</Text>
                         </HStack>
@@ -108,7 +112,7 @@ const EventDetailsModal = ({ isOpen, onClose, post }) => {
     );
   };
   
-  export default EventDetailsModal;
+export default EventDetailsModal;
 /*
 const EventDetailsModal = ({ isOpen, onClose, post}) => {
     const [orgData, setOrgData] = useState(null);

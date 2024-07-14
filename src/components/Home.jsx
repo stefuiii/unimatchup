@@ -14,7 +14,7 @@ import {
   Tab, TabPanel, TabPanels, TabList,
   Heading, Highlight,
   Divider, AbsoluteCenter, Text, ButtonGroup,
-  Card, CardBody, Portal
+  Card, CardBody, Portal, Spinner
 } from '@chakra-ui/react'
 import {
   Popover,
@@ -36,15 +36,7 @@ import sportIcon from "../icons/体育锻炼.svg"
 import groupIcon from "../icons/工作汇报.svg"
 import profile from "../icons/人员.svg"
 import { auth, database } from "../firebase-config"
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-} from '@chakra-ui/react'
+import ProfileCard from "./ProfileCard";
 
 export const Home = () =>  {
   const [size, setSize] = React.useState('')
@@ -62,41 +54,48 @@ export const Home = () =>  {
   } = useDisclosure();
 
   const [nickName, setNickName] = useState('');
+  const [userID, setUserID] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [shouldRenderProfileCard, setShouldRenderProfileCard] = useState(false);
+
   const navigate = useNavigate();
-  const user = auth.currentUser;
-  const userID = user.uid;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        setUserID(uid);
+
+        try {
+          const userProfileRef = doc(database, 'userProfile', uid);
+          const userProfileDoc = await getDoc(userProfileRef);
+          if (userProfileDoc.exists()) {
+            const userProfileData = userProfileDoc.data();
+            setNickName(userProfileData.nickName);
+          } else {
+            console.log('No such user profile document!');
+          }
+        } catch (error) {
+          console.error('Error getting user profile:', error);
+        }
+      }
+      setLoadingUser(false);
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleModalOpen = () => {
+    setShouldRenderProfileCard(true);
+    onModalOpen();
+  };
+
+  if (loadingUser) {
+    return <Spinner alignContent={'center'}/>;
+  }
   
 
-  /*
-  const profileCard = async() => {
-    const profileRef = doc(database, "userProfile", userID);
-    const profileSnap = await getDoc(profileRef);
-    const profileDetail = profileSnap.data();
-
-    const name = profileDetail.firstName;
-    const nickName = profileDetail.nickName;
-    const hobbies = profileDetail.hobbies;
-
-    return (
-      <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>
-      <CardBody>
-        <Stack mt='2' spacing='3'>
-          <HStack spacing={100}>
-          </HStack>
-          <Text className="one-line-description" fontSize="sm">
-          Hi
-          </Text>
-      </Stack>
-      <HStack mt={'4'} spacing={'3'}>
-      </HStack>
-      <HStack mt={'3'} spacing={'3'}>
-      </HStack>
-      </CardBody>
-    </Card>
-    )
-
-  }
-    */
 
   const handleClick = (newSize) => {
     setSize(newSize)
@@ -147,83 +146,31 @@ export const Home = () =>  {
     navigate('/createprofile');
   }
 
-  
-  useEffect(() => {
-    const getNickName = async () => {
-      try {
-        const userProfileRef = doc(database, 'userProfile', userID);
-        const userProfileDoc = await getDoc(userProfileRef);
-        if (userProfileDoc.exists()) {
-          const userProfileData = userProfileDoc.data();
-          setNickName(userProfileData.nickName);
-        } else {
-            console.log('No such user profile document!');
-        }
-      } catch (error) {
-          console.error('Error getting user profile:', error);
-      }
-    };
-  
-    if (userID) {
-      getNickName();
-    }
-    }, [userID]);
+
 
 
 
   return (
     <ChakraProvider>
       <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
-      <>
-      <Button onClick={onModalOpen} bg={'none'} mb={5}>
-      <img src={profile} alt="Avatar" width="30" height="30"/>
-      </Button>
-      <Modal isOpen={isModalOpen} onClose={onModalClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Your Profile</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-          <HStack>
-          <Heading size={'sm'}>
-            Name
-          </Heading>
-          <Text>Stephanie</Text>
-          </HStack>
-          <HStack>
-          <Heading size={'sm'}>
-            Nick Name
-          </Heading>
-          <Text>stefuiii</Text>
-          </HStack>
-          <HStack>
-          <Heading size={'sm'}>
-            Major
-          </Heading>
-          <Text>Computer Science</Text>
-          </HStack>
-          <HStack>
-          <Heading size={'sm'}>
-            Hobbies
-          </Heading>
-          </HStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={onModalClose}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      </>
-      <ChatIcon boxSize={6} mb={7} color={'white'}/>
-      <Button
-          onClick={() => handleClick('sm')}
-          key={'sm'}
-          m={5}
-          bg={"white"}
-        >{`Your Page`}</Button>
-      </HStack>
+       <>
+       <Button onClick={handleModalOpen} bg={'none'} mb={5}>
+        <img src={profile} alt="Avatar" width="30" height="30" />
+       </Button>
+       {shouldRenderProfileCard && (
+          <ProfileCard isOpen={isModalOpen} onClose={onModalClose} userID={userID} />
+        )}
+       </>
+     <ChatIcon boxSize={6} mb={7} color={'white'} />
+     <Button
+      onClick={() => handleClick('sm')}
+      key={'sm'}
+      m={5}
+      bg={"white"}
+    >
+      {`Your Page`}
+    </Button>
+  </HStack>
     <Flex
     bg={"#FFEFDA"}
     width='100vw'
