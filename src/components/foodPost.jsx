@@ -44,7 +44,8 @@ export const AddFoodPost = () => {
             Number: parseFloat(number),
             Menu: menu,
             docID: "",
-            Joined: 0
+            Joined: 0,
+            collection: "foodPost"
           });
 
           const docInfo = docRef.id;

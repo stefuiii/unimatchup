@@ -156,7 +156,7 @@ export const ShowSport = () => {
     return (
         <ChakraProvider>
           <Flex
-          bg={"white"}
+          bg={"#FFEFDA"}
           width='100vw'
           height='100vh'
           display="flex"

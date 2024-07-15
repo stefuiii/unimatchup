@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { doc, setDoc, addDoc, collection, Timestamp, updateDoc} from 'firebase/firestore';
+import { addDoc, collection, Timestamp, updateDoc} from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -44,7 +43,8 @@ export const AddSportPost = () => {
             Date: Timestamp.fromDate(date),
             Number: parseFloat(number),
             docID: "",
-            Joined: 0
+            Joined: 0,
+            collection: "sportPost"
           });
           const docInfo = docRef.id;
           await updateDoc(docRef, { docID: docInfo});

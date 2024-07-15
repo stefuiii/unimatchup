@@ -14,7 +14,6 @@ import {
   Heading
 } from '@chakra-ui/react';
 import { ArrowRightIcon } from '@chakra-ui/icons';
-import myAvatar from "../icons/avatar13.svg";
 import dayjs from 'dayjs';
 
 

@@ -154,7 +154,7 @@ export const ShowGroup = () => {
     return (
         <ChakraProvider>
           <Flex
-          bg={"white"}
+          bg={"#FFEFDA"}
           width='100vw'
           height='100vh'
           display="flex"
@@ -171,9 +171,9 @@ export const ShowGroup = () => {
             marginTop: '100px',
             gap: '20px', height: '80vh' }}>
             <Box mt={-10}>
-              <img src={groupHeading} alt="Avatar" height={300} width={250}/>
+              <img src={groupHeading} alt="Avatar" height={200} width={200}/>
             </Box>
-            <HStack spacing={'4'} mt={-10}>
+            <HStack spacing={'4'} mt={0}>
             <InputGroup>
               <InputLeftElement pointerEvents='none'>
                 <SearchIcon marginTop={'3'}color='gray.300' />

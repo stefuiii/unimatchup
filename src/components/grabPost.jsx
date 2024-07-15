@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { doc, setDoc, addDoc, collection, Timestamp, updateDoc} from 'firebase/firestore';
+import { addDoc, collection, Timestamp, updateDoc} from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -27,7 +26,6 @@ export const AddGrabPost = () => {
     const [date, setDate] = useState(new Date());
     const [number, setNumber] = useState(0);
     const toast = useToast();
-    const navigate = useNavigate();
 
     const handleSubmit = async(e) => {
       e.preventDefault();
@@ -44,7 +42,8 @@ export const AddGrabPost = () => {
             Date: Timestamp.fromDate(date),
             Number: parseFloat(number),
             docID: "",
-            Joined: 0
+            Joined: 0,
+            collection: "postInfo"
           });
 
           const docInfo = docRef.id;
