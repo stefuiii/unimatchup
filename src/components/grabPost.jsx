@@ -76,6 +76,7 @@ export const AddGrabPost = () => {
   
    return (
     <Flex 
+    bg={'#FFEFDA'}
     height="100vh" 
     alignItems="center" 
     justifyContent="center"
@@ -88,7 +89,8 @@ export const AddGrabPost = () => {
      color='white' 
      border ='2px solid'
      borderRadius={'20px'}
-     p={0}>
+     p={0}
+     boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)'>
       
        <Box
          bg="#F4A460"
@@ -147,7 +149,7 @@ export const AddGrabPost = () => {
           id="date" 
           mb="3" 
           width="150px"
-          color={'white'}
+          color={'gray'}
           isRequired>
             <FormLabel mb={'0'}>Date and Time</FormLabel>
             <DatePicker

@@ -10,7 +10,7 @@ import { Box, Heading, Button,
          ChakraProvider,
          Input, Flex } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useToast, useDisclosure } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useToast, useDisclosure, Spinner } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import grabHeading from "../icons/打车场景.svg"
 import EventDetailsModal from "./EventDetailsModal.jsx";
@@ -143,6 +143,7 @@ export const ShowGrab = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     
@@ -153,6 +154,7 @@ export const ShowGrab = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -212,6 +214,10 @@ export const ShowGrab = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -231,6 +237,8 @@ export const ShowGrab = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>

@@ -10,7 +10,7 @@ import { Box, Heading, Button,
          ChakraProvider, useToast,
          Input, Flex } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useDisclosure, Spinner } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import postAvatar from "../icons/avatar13.svg"
 import sportHeading from "../icons/体育锻炼.svg"
@@ -122,6 +122,7 @@ export const ShowSport = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -130,6 +131,7 @@ export const ShowSport = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -189,6 +191,10 @@ export const ShowSport = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -208,6 +214,8 @@ export const ShowSport = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>

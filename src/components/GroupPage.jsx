@@ -8,8 +8,8 @@ import { Box, Heading, Button,
          InputGroup,
          InputLeftElement,
          ChakraProvider,
-         Input, Flex, useToast } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon, SearchIcon} from "@chakra-ui/icons";
+         Input, Flex, useToast, Spinner } from "@chakra-ui/react";
+import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import postAvatar from "../icons/avatar13.svg"
@@ -120,6 +120,7 @@ export const ShowGroup = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -128,6 +129,7 @@ export const ShowGroup = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -179,6 +181,7 @@ export const ShowGroup = () => {
                 <SearchIcon marginTop={'3'}color='gray.300' />
               </InputLeftElement>
               <Input 
+              bg={'white'}
               value={search}
               onChange={(e) => setSearch(e.target.value)} 
               width={'600px'}
@@ -186,6 +189,10 @@ export const ShowGroup = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -205,6 +212,8 @@ export const ShowGroup = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>

@@ -5,7 +5,7 @@ import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
          HStack, InputGroup, InputLeftElement,
          ChakraProvider, Input,
-         Flex, useToast, useDisclosure } from "@chakra-ui/react";
+         Flex, useToast, useDisclosure, Spinner } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
@@ -117,6 +117,7 @@ export const ShowFood = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -125,6 +126,7 @@ export const ShowFood = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -186,6 +188,10 @@ export const ShowFood = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -205,6 +211,8 @@ export const ShowFood = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>
