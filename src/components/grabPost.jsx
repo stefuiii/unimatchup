@@ -49,7 +49,8 @@ export const AddGrabPost = () => {
             Joined: 0,
             chatRoomId: "",
             collection: "postInfo",
-            Members: [userProfileRef]
+            Members: [userProfileRef],
+            status: "active"
           });
 
           const docInfo = docRef.id;

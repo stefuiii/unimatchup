@@ -49,7 +49,8 @@ export const AddTutPost = () => {
           Joined: 0,
           chatRoomId: "",
           collection: "groupPost",
-          Members: []
+          Members: [],
+          status: "active"
         });
 
         const docInfo = docRef.id;

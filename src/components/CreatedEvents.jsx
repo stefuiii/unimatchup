@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
-import { collection, getDocs, orderBy, query, where} from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where} from "firebase/firestore";
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
          HStack, ChakraProvider, Grid } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import EventDetailsModal from "./EventDetailsModal.jsx";
 
 const ShowPosts = ({post}) => {
+  const toast = useToast();
 
   const {
     isOpen: isModalOpen,
@@ -17,6 +18,47 @@ const ShowPosts = ({post}) => {
     onClose: onModalClose
   } = useDisclosure();
 
+  const deleteEvent = async () => {
+    try {
+      const eventRef = doc(database, post.collection, post.docID);
+      const eventDoc = await getDoc(eventRef);
+      const eventData = eventDoc.data();
+
+      await updateDoc(eventRef, { status: 'deleted' });
+
+      const chatRoomRef = doc(database, 'chatRooms', eventData.chatRoomId);
+      await deleteDoc(chatRoomRef);
+
+      for (const memberRef of eventData.Members) {
+        const memberDoc = await getDoc(memberRef);
+        if (memberDoc.exists()) {
+          const memberData = memberDoc.data();
+          const updatedEvents = memberData.events.filter(event => event.id !== eventRef.id);
+          const updatedChatRooms = memberData.chatRooms.filter(chatRoom => chatRoom.id !== chatRoomRef.id);
+          await updateDoc(memberRef, { events: updatedEvents, chatRooms: updatedChatRooms });
+        }
+      }
+
+      await deleteDoc(eventRef);
+
+      toast({
+        title: 'Event Deleted',
+        description: 'The event has been successfully deleted.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error deleting event: ", error);
+      toast({
+        title: 'Error',
+        description: 'There was an error deleting the event.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
     
     const date = post.Date.toDate().toLocaleString();
     return (
@@ -39,8 +81,13 @@ const ShowPosts = ({post}) => {
       <CardFooter style={{ marginTop: '-30px' }}
         justifyContent={'left'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
-        <Button  size={'sm'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
+          <>
+          <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
             Details
+          </Button>
+          </>
+          <Button onClick={deleteEvent} size={'xs'} colorScheme="red" fontSize="xs">
+            Delete
           </Button>
           <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
         </ButtonGroup>
@@ -77,6 +124,10 @@ export const ShowAll = () => {
         };
         fetchPosts();
     }, [user]);
+
+    const removePost = (postId) => {
+      setPosts(posts.filter(post => post.docID !== postId));
+    };
 
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;

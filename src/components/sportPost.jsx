@@ -48,7 +48,8 @@ export const AddSportPost = () => {
             Joined: 0,
             chatRoomId: "",
             collection: "sportPost",
-            Members: [userProfileRef]
+            Members: [userProfileRef],
+            status: "active"
           });
           const docInfo = docRef.id;
           await updateDoc(docRef, { docID: docInfo});

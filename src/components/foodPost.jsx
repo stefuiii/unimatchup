@@ -48,7 +48,8 @@ export const AddFoodPost = () => {
             Joined: 0,
             chatRoomId: "",
             collection: "foodPost",
-            Members: [userProfileRef]
+            Members: [userProfileRef],
+            status: "active"
           });
 
           const docInfo = docRef.id;
