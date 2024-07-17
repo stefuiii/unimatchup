@@ -1,32 +1,32 @@
-import React, { useState } from "react"
-import { Box, ChakraProvide, ChakraProvider, Flex, HStack, IconButton, Stack } from '@chakra-ui/react'
+import React, { useState }from "react"
+import { Box, ChakraProvider, Flex, HStack, Stack, Link } from '@chakra-ui/react'
 import {
   Button,
-  useDisclosure,
   Heading, Highlight,
   Checkbox, Tooltip
 } from '@chakra-ui/react'
-import { ShowAll } from "./CreatedEvents"
-import { ChatIcon } from "@chakra-ui/icons";
 import { useNavigate } from 'react-router-dom';
 import headIcon from "../icons/工作.svg"
-import myAvatar from "../icons/avatar13.svg"
 import smalldeco from "../icons/页头箭头.svg"
-import grabIcon from "../icons/打车场景.svg"
-import foodIcon from "../icons/一起吃饭.svg"
-import sportIcon from "../icons/体育锻炼.svg"
-import groupIcon from "../icons/工作汇报.svg"
-import profile from "../icons/人员.svg"
+
 
 export const Landing = () =>  {
-  const [size, setSize] = React.useState('')
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [isChecked, setIsChecked] = useState(true);
   const navigate = useNavigate();
   
   const handleLogin = () => {
-    console.log("Click to login");
-    navigate('/login');
+    if (isChecked) {
+      console.log("Click to login");
+      navigate('/login');
+    } else {
+      console.log('Not Checked');
+    }
+    
   }
+
+  const handleCheckboxChange = (event) => {
+    setIsChecked(event.target.checked);
+  };
 
   return (
     <ChakraProvider>
@@ -65,10 +65,15 @@ export const Landing = () =>  {
         {`With UniMatchUp to\nfind your Best-fit Buddies!`}
         </Highlight>
       </Heading>
-          <Button onClick={handleLogin} bg={'white'} borderRadius={'10'}>Start Your Journey</Button>
+          <Button  isDisabled={!isChecked} onClick={handleLogin} bg={'white'} borderRadius={'10'}>Start Your Journey</Button>
       <Box mt={2}>
         <Tooltip hasArrow bg="white" color="black" label="Please agree to the terms of service" aria-label="A tooltip">
-            <Checkbox defaultChecked color={"gray"}>You are agreed with our Terms of Service</Checkbox>
+        <Checkbox defaultChecked={isChecked} onChange={handleCheckboxChange} color={"gray"}>
+          You are agreed with our{" "}
+          <Link href="/terms-of-service" textDecoration="underline">
+            Terms of Service
+          </Link>
+        </Checkbox>
         </Tooltip>
       </Box>
       </Stack>
