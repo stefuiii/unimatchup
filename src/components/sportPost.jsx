@@ -18,7 +18,7 @@ import { Box,
          NumberDecrementStepper,
          useToast,
          Flex} from '@chakra-ui/react';
-import { database } from "../firebase-config";
+import { auth, database } from "../firebase-config";
 import "../format/Datepicker.css";
 
 export const AddSportPost = () => {
@@ -31,37 +31,47 @@ export const AddSportPost = () => {
 
     const handleSubmit = async(e) => {
       e.preventDefault();
-      try {
-        const docRef = await addDoc(collection(database, "sportPost"), {
-          Title: title,
-          Description: description,
-          Location: location,
-          Date: Timestamp.fromDate(date),
-          Number: parseFloat(number),
-          docID: "",
-          Joined: 0
-        });
-        const docInfo = docRef.id;
-        await updateDoc(docRef, { docID: docInfo});
-        console.log("Document successfully written!");
-        
-        toast({
-          title: "Post created.",
-          description: "Your post has been successfully created.",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
+      const user = auth.currentUser;
 
-        setTitle('');
-        setDescription('');
-        setLocation('');
-        setDate('');
-        setNumber(0);
-      } catch (error) {
-        console.error("Error writing document: ", error);
+      if (user) {
+        const uid = user.uid;
+        try {
+          const userProfileRef = doc(database, 'userProfile', uid);
+          const docRef = await addDoc(collection(database, "sportPost"), {
+            uid: uid,
+            Title: title,
+            Description: description,
+            Location: location,
+            Date: Timestamp.fromDate(date),
+            Number: parseFloat(number),
+            docID: "",
+            Joined: 0,
+            chatRoomId: "",
+            collection: "sportPost",
+            Members: [userProfileRef]
+          });
+          const docInfo = docRef.id;
+          await updateDoc(docRef, { docID: docInfo});
+          console.log("Document successfully written!");
+          
+          toast({
+            title: "Post created.",
+            description: "Your post has been successfully created.",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+  
+          setTitle('');
+          setDescription('');
+          setLocation('');
+          setDate('');
+          setNumber(0);
+        } catch (error) {
+          console.error("Error writing document: ", error);
+        }
       }
-      
+       
     }
 
   

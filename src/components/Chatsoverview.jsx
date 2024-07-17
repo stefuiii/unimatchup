@@ -15,31 +15,73 @@ import {
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { auth, database } from '../firebase-config';
 import myAvatar from "../icons/avatar13.svg";
-
-const chatData = [
-  { id: 1, name: 'Grab to Changi', lastMessage: 'I love Jackson Wang', avatar: myAvatar, time: '21:56' },
-  { id: 2, name: 'Flight to TPE', lastMessage: 'Hello Stephanie', avatar: myAvatar, time: '21:00' },
-  { id: 3, name: 'Cartier SG 2024', lastMessage: 'Fishee YOU ARE INVITED', avatar: myAvatar, time:'18:00' },
-  { id: 4, name: 'NU Class of 2026 Prom', lastMessage: 'Alen Wong YOU ARE NOT INVITED', avatar: myAvatar, time:'FOREVER' },
-];
+import dayjs from 'dayjs';
 
 export const Chatsoverview = () => {
   const [search, setSearch] = useState('');
-  const [chats, setChats] = useState(chatData);
+  const [chats, setChats] = useState([]);
+  const [filteredChats, setFilteredChats] = useState([]);
   const navigate = useNavigate();
+  const user = auth.currentUser;
+
+  useEffect(() => {
+    const fetchChats = () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userProfileRef = doc(database, 'userProfile', user.uid);
+
+        const unsubscribeUserProfile = onSnapshot(userProfileRef, (userProfileSnap) => {
+          if (userProfileSnap.exists()) {
+            const userProfileData = userProfileSnap.data();
+            const chatRoomIds = userProfileData.chatRooms || [];
+
+            if (chatRoomIds.length > 0) {       
+              const chatsQuery = query(collection(database, 'chatRooms'), where('__name__', 'in', chatRoomIds));
+              const unsubscribeChatRooms = onSnapshot(chatsQuery, (querySnapshot) => {
+                const chatsData = querySnapshot.docs.map(doc => ({
+                  id: doc.id,
+                  ...doc.data(),
+                }));
+
+                const sortedChats = chatsData.sort((a, b) => {
+                  const timeA = a.lastMessageTime ? a.lastMessageTime.toDate() : new Date(0);
+                  const timeB = b.lastMessageTime ? b.lastMessageTime.toDate() : new Date(0);
+                  return timeB - timeA;
+                });
+
+                setChats(sortedChats);
+                setFilteredChats(sortedChats); 
+              });
+
+              return () => unsubscribeChatRooms();
+            } else {
+              setChats([]);
+              setFilteredChats([]);
+            }
+          }
+        });
+
+        return () => unsubscribeUserProfile();
+      }
+    };
+
+    fetchChats();
+  }, []);
 
   useEffect(() => {
     if (search === '') {
-      setChats(chatData);
+      setFilteredChats(chats);
     } else {
-      setChats(
-        chatData.filter(chat =>
-          chat.name.toLowerCase().includes(search.toLowerCase())
+      setFilteredChats(
+        chats.filter(chat =>
+          chat.name?.toLowerCase().includes(search.toLowerCase())
         )
       );
     }
-  }, [search]);
+  }, [search, chats]);
 
   const handleChatClick = (chatId) => {
     navigate(`/chatpage/${chatId}`);
@@ -48,8 +90,8 @@ export const Chatsoverview = () => {
   return (
     <ChakraProvider>
       <Box bg="#FFEFDA" minH="100vh" p={5}>
-       <Flex justify="center" mb={5}>
-          <Heading lineHeight='tall' whiteSpace ='pre-line'>
+        <Flex justify="center" mb={5}>
+          <Heading lineHeight='tall' whiteSpace='pre-line'>
             <Highlight
               query='Chat List'
               styles={{ px: '8', py: '1', rounded: 'full', bg: '#FFBF6A' }}
@@ -59,7 +101,9 @@ export const Chatsoverview = () => {
           </Heading>
         </Flex>
         <InputGroup mb={5}>
-          <InputLeftElement pointerEvents="none" children={<SearchIcon color="gray.300" />} />
+          <InputLeftElement pointerEvents="none">
+            <SearchIcon color="gray.300" />
+          </InputLeftElement>
           <Input
             type="text"
             placeholder="Search Chats"
@@ -68,26 +112,51 @@ export const Chatsoverview = () => {
           />
         </InputGroup>
         <VStack spacing={4} align="stretch">
-          {chats.map(chat => (
+          {filteredChats.map(chat => (
             <Box
               key={chat.id}
               bg="white"
               p={4}
               borderRadius="md"
               boxShadow="sm"
+              position="relative"
               onClick={() => handleChatClick(chat.id)}
               _hover={{ bg: 'gray.50', cursor: 'pointer' }}
             >
-              <HStack spacing={4}>
-                <Avatar src={chat.avatar} name={chat.name} />
-                <Flex justify="space-between" align="center" w="100%">
-                <Box>
-                  <Text fontWeight="bold">{chat.name}</Text>
-                  <Text fontSize="sm" color="gray.500">{chat.lastMessage}</Text>
+              <Flex align="center" w="100%">
+                <Avatar src={chat.avatar || myAvatar} name={chat.name || "Chat Room"} />
+                <Box ml={4} flex="1">
+                  <Flex justify="space-between" align="center">
+                    <Text fontWeight="bold">{chat.name || "Chat Room"}</Text>
+                    <Text fontSize="sm" color="gray.400">{chat.lastMessageTime ? dayjs(chat.lastMessageTime.toDate()).format('HH:mm') : ""}</Text>
+                  </Flex>
+                  <Flex align="center" mt={1}>
+                    <Box flex="1">
+                      <Text fontSize="sm" color="gray.500">
+                        {chat.lastMessageSender
+                          ? `${chat.lastMessageSender}: ${chat.lastMessage || "No message"}`
+                          : "Say hi to your buddies!"}
+                      </Text>
+                    </Box>
+                    {chat.unreadMessages?.[user.uid] > 0 && (
+                      <Box
+                        bg="red.500"
+                        color="white"
+                        borderRadius="full"
+                        boxSize={6}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        position="relative"
+                        right={1}
+                        bottom={-1} 
+                      >
+                        <Text fontSize="xs">{chat.unreadMessages[user.uid]}</Text>
+                      </Box>
+                    )}
+                  </Flex>
                 </Box>
-                  <Text fontSize="sm" color="gray.400" alignSelf="flex-start">{chat.time}</Text>
-                </Flex>
-              </HStack>
+              </Flex>
             </Box>
           ))}
         </VStack>

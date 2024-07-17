@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { doc, setDoc, addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, setDoc, addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -18,31 +18,46 @@ import { Box,
          NumberDecrementStepper,
          Flex,
          useToast} from '@chakra-ui/react';
-import { database } from "../firebase-config";
+import { auth, database } from "../firebase-config";
 
 export const AddTutPost = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [location, setLocation] = useState('');
-    const [date, setDate] = useState(new Date());
-    const [number, setNumber] = useState(0);
-    const toast = useToast();
-    const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [number, setNumber] = useState(0);
+  const toast = useToast();
+  const navigate = useNavigate();
 
-    const handleSubmit = async(e) => {
-      e.preventDefault();
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+
+    if (user) {
+      const uid = user.uid;
       try {
+        const userProfileRef = doc(database, 'userProfile', uid);
+
         const docRef = await addDoc(collection(database, "groupPost"), {
+          uid: uid,
           Title: title,
           Description: description,
           Location: location,
           Date: Timestamp.fromDate(date),
           Number: parseFloat(number),
           docID: "",
-          Joined: 0
+          Joined: 0,
+          chatRoomId: "",
+          collection: "groupPost",
+          Members: []
         });
+
         const docInfo = docRef.id;
-        await updateDoc(docRef, { docID: docInfo});
+        await updateDoc(docRef, { 
+          docID: docInfo, 
+          Members: arrayUnion(userProfileRef) 
+        });
+
         console.log("Document successfully written!");
         
         toast({
@@ -59,15 +74,15 @@ export const AddTutPost = () => {
         setDate('');
         setNumber(0);
 
-        navigate('/home');
       } catch (error) {
         console.error("Error writing document: ", error);
       }
-      
     }
+    
+    
+  }
 
-  
-   return (
+  return (
     <Flex 
     height="100vh" 
     alignItems="center" 

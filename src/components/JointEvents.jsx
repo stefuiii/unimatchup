@@ -1,24 +1,85 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 //import "./Registration.css";
-import { Link, useNavigate } from "react-router-dom";
 import { auth, database } from "../firebase-config.js";
-import { collection, addDoc, doc, setDoc, getDoc, getDocs, orderBy, query, where} from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, useAuthState } from "firebase/auth";
-import { Box, Heading, FormControl, FormLabel, Button, 
-         Stack, Text, Divider, ButtonGroup,
-         HStack, PostCard, 
-         InputGroup,
-         InputLeftElement,
-         ChakraProvider,
-         Input, Flex, 
-         useRadio, Grid } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon, SearchIcon, PhoneIcon } from "@chakra-ui/icons";
-import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
+import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
+import { Box, Heading, Button, 
+         Stack, Text,  ButtonGroup,
+         HStack, 
+         ChakraProvider, Grid } from "@chakra-ui/react";
+import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
+import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
-import postAvatar from "../icons/avatar13.svg"
-import grabHeading from "../icons/打车场景.svg"
+import EventDetailsModal from "./EventDetailsModal.jsx";
 
-const ShowPosts = ({post}) => {
+const ShowPosts = ({post, onRemovePost}) => {
+  const user = auth.currentUser;
+  const toast = useToast();
+
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
+    
+  const quitEvent = async() => {
+    try {
+      console.log('Clicked!')
+      //ref of profile
+      const userProfileRef = doc(database, 'userProfile', user.uid);
+      const userProfileDoc = await getDoc(userProfileRef);
+
+      if (userProfileDoc.exists()) {
+        const userProfile = userProfileDoc.data();
+        console.log(userProfile.uid);
+
+        // ref of post
+        const docRef = doc(database, post.collection, post.docID);
+        const docCollect = await getDoc(docRef);
+        const docData = docCollect.data();
+
+        if (docData.Joined === docData.Number) {
+          toast({
+            title: 'Quit Failed',
+            description: 'You cannot quit the event as it has successfully built up',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        // update the event array in the userProfile ref
+        const updatedEvents = userProfile.events.filter(eventRef => eventRef.id !== docRef.id);
+        await updateDoc(userProfileRef, { events: updatedEvents });
+
+        // update the member array in the postRef
+        const updatedMembers = docData.Members.filter(memberRef => memberRef.id !== userProfileRef.id);
+        await updateDoc(docRef, { Members: updatedMembers });
+        await updateDoc(docRef, { Joined: increment(-1) });
+
+        onRemovePost(post.docID);
+
+
+        toast({
+          title: 'Event Quit',
+          description: 'You have successfully quit the event.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error quitting event: ", error);
+      toast({
+        title: 'Error',
+        description: 'There was an error quitting the event.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
+
     const date = post.Date.toDate().toLocaleString();
     return (
     <Card maxW='sm' width="150px" height="200px" justifyContent={'center'}>
@@ -40,9 +101,15 @@ const ShowPosts = ({post}) => {
       <CardFooter style={{ marginTop: '-30px' }}
         justifyContent={'left'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
-          <Button size="sm" variant='solid' colorScheme='blue' fontSize="xs">
-            View Detail
+          <>
+          <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
+            Details
           </Button>
+          </>
+          <Button onClick={quitEvent} size={'xs'} colorScheme="red" fontSize="xs">
+            Quit
+          </Button>
+          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
         </ButtonGroup>
       </CardFooter>
     </Card>
@@ -84,7 +151,11 @@ export const ShowAllJoint = () => {
         }
         }
         fetchPosts();
-    }, []);
+    }, [uid]);
+
+    const removePost = (postId) => {
+      setPosts(posts.filter(post => post.docID !== postId));
+    };
 
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -114,7 +185,7 @@ export const ShowAllJoint = () => {
             flexDirection: 'column'}}>
            <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
             {currentPosts.map((post, index) => (
-            <ShowPosts key={index} post={post} />
+            <ShowPosts key={index} post={post} onRemovePost={removePost} />
           ))}
         </Grid>
           <Box style={{ display: 'flex', 

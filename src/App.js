@@ -47,7 +47,7 @@ function App() {
         <Route path="/createprofile" element={<CreateProfile />} />
         <Route path="/guide" element={<Guide />} />
         <Route path="/chatsoverview" element={<Chatsoverview />} />
-        <Route path="/chatpage/:chatId" element={<ChatPage />} />
+        <Route path="/chatpage/:chatRoomId" element={<ChatPage />} />
       </Routes>
     </Router>
     </ChakraProvider>

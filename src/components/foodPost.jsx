@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, Timestamp, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -35,6 +35,7 @@ export const AddFoodPost = () => {
       if (user) {
         const uid = user.uid;
         try {
+          const userProfileRef = doc(database, 'userProfile', uid);
           const docRef = await addDoc(collection(database, "foodPost"), {
             uid: uid,
             Title: title,
@@ -44,7 +45,10 @@ export const AddFoodPost = () => {
             Number: parseFloat(number),
             Menu: menu,
             docID: "",
-            Joined: 0
+            Joined: 0,
+            chatRoomId: "",
+            collection: "foodPost",
+            Members: [userProfileRef]
           });
 
           const docInfo = docRef.id;

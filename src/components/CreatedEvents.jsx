@@ -5,10 +5,19 @@ import { collection, getDocs, orderBy, query, where} from "firebase/firestore";
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
          HStack, ChakraProvider, Grid } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
+import EventDetailsModal from "./EventDetailsModal.jsx";
 
 const ShowPosts = ({post}) => {
+
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
+
+    
     const date = post.Date.toDate().toLocaleString();
     return (
     <Card maxW='sm' width="150px" height="200px" justifyContent={'center'}>
@@ -30,9 +39,10 @@ const ShowPosts = ({post}) => {
       <CardFooter style={{ marginTop: '-30px' }}
         justifyContent={'left'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
-          <Button size="sm" variant='solid' colorScheme='blue' fontSize="xs">
-            View Detail
+        <Button  size={'sm'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
+            Details
           </Button>
+          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
         </ButtonGroup>
       </CardFooter>
     </Card>
@@ -66,7 +76,7 @@ export const ShowAll = () => {
             }
         };
         fetchPosts();
-    }, []);
+    }, [user]);
 
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;

@@ -14,7 +14,7 @@ import {
   Tab, TabPanel, TabPanels, TabList,
   Heading, Highlight,
   Divider, AbsoluteCenter, Text, ButtonGroup,
-  Card, CardBody, Portal
+  Card, CardBody, Portal, Spinner
 } from '@chakra-ui/react'
 import {
   Popover,
@@ -36,18 +36,70 @@ import sportIcon from "../icons/体育锻炼.svg"
 import groupIcon from "../icons/工作汇报.svg"
 import profile from "../icons/人员.svg"
 import { auth, database } from "../firebase-config"
+import ProfileCard from "./ProfileCard";
 
 export const Home = () =>  {
   const [size, setSize] = React.useState('')
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose
+  } = useDisclosure();
+
+  // 第二个 useDisclosure 钩子，用于管理第二个状态
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose
+  } = useDisclosure();
+
   const [nickName, setNickName] = useState('');
+  const [userID, setUserID] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [shouldRenderProfileCard, setShouldRenderProfileCard] = useState(false);
+
   const navigate = useNavigate();
-  const user = auth.currentUser;
-  const userID = user.uid;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const uid = user.uid;
+        setUserID(uid);
+
+        try {
+          const userProfileRef = doc(database, 'userProfile', uid);
+          const userProfileDoc = await getDoc(userProfileRef);
+          if (userProfileDoc.exists()) {
+            const userProfileData = userProfileDoc.data();
+            setNickName(userProfileData.nickName);
+          } else {
+            console.log('No such user profile document!');
+          }
+        } catch (error) {
+          console.error('Error getting user profile:', error);
+        }
+      }
+      setLoadingUser(false);
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleModalOpen = () => {
+    setShouldRenderProfileCard(true);
+    onModalOpen();
+  };
+
+  if (loadingUser) {
+    return <Spinner alignContent={'center'}/>;
+  }
+  
+
 
   const handleClick = (newSize) => {
     setSize(newSize)
-    onOpen()
+    onDrawerOpen()
   }
 
   const handleGrabClick = () => {
@@ -98,43 +150,29 @@ export const Home = () =>  {
     navigate('/chatsoverview');
   }
 
-  
-  useEffect(() => {
-    const getNickName = async () => {
-      try {
-        const userProfileRef = doc(database, 'userProfile', userID);
-        const userProfileDoc = await getDoc(userProfileRef);
-        if (userProfileDoc.exists()) {
-          const userProfileData = userProfileDoc.data();
-          setNickName(userProfileData.nickName);
-        } else {
-            console.log('No such user profile document!');
-        }
-      } catch (error) {
-          console.error('Error getting user profile:', error);
-      }
-    };
-  
-    if (userID) {
-      getNickName();
-    }
-    }, [userID]);
-  
+
 
   return (
     <ChakraProvider>
       <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
-      <Button bg={'none'} mb={5}>
-      <img src={profile} alt="Avatar" width="30" height="30"/>
-      </Button>
-      <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
-      <Button
-          onClick={() => handleClick('sm')}
-          key={'sm'}
-          m={5}
-          bg={"white"}
-        >{`Your Page`}</Button>
-      </HStack>
+       <>
+       <Button onClick={handleModalOpen} bg={'none'} mb={5}>
+        <img src={profile} alt="Avatar" width="30" height="30" />
+       </Button>
+       {shouldRenderProfileCard && (
+          <ProfileCard isOpen={isModalOpen} onClose={onModalClose} userID={userID} />
+        )}
+       </>
+       <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
+     <Button
+      onClick={() => handleClick('sm')}
+      key={'sm'}
+      m={5}
+      bg={"white"}
+    >
+      {`Your Page`}
+    </Button>
+  </HStack>
     <Flex
     bg={"#FFEFDA"}
     width='100vw'
@@ -320,7 +358,7 @@ export const Home = () =>  {
       </HStack>  
       </Box>
       </Box>
-      <Drawer onClose={onClose} isOpen={isOpen} size={'sm'}>
+      <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />

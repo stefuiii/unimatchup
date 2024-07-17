@@ -36,6 +36,8 @@ export const AddGrabPost = () => {
       if (user) {
         const uid = user.uid;
         try {
+          const userProfileRef = doc(database, 'userProfile', uid);
+
           const docRef = await addDoc(collection(database, "postInfo"), {
             uid: uid,
             Title: title,
@@ -44,7 +46,10 @@ export const AddGrabPost = () => {
             Date: Timestamp.fromDate(date),
             Number: parseFloat(number),
             docID: "",
-            Joined: 0
+            Joined: 0,
+            chatRoomId: "",
+            collection: "postInfo",
+            Members: [userProfileRef]
           });
 
           const docInfo = docRef.id;
