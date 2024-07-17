@@ -17,6 +17,9 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { Landing } from './components/landing';
 import { CreateProfile } from './components/userProfile';
 import { Guide } from './components/guide';
+import { Chatsoverview} from './components/Chatsoverview';
+import { ChatPage } from './components/ChatPage';
+
 
 
 function App() {
@@ -45,6 +48,8 @@ function App() {
         <Route path="/landing" element={<Landing />} />
         <Route path="/createprofile" element={<CreateProfile />} />
         <Route path="/guide" element={<Guide />} />
+        <Route path="/chatsoverview" element={<Chatsoverview />} />
+        <Route path="/chatpage/:chatRoomId" element={<ChatPage />} />
       </Routes>
     </Router>
     </ChakraProvider>

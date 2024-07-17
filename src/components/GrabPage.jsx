@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
-import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion} from "firebase/firestore";
+import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion, addDoc} from "firebase/firestore";
 import { Box, Heading, Button, 
          Stack, Text, ButtonGroup,
          HStack, 
@@ -83,6 +83,11 @@ const ShowPosts = ({post}) => {
             isClosable: true,
           });
 
+          if (newlyAdded === post.Number) {
+            console.log('Creating chat room...');
+            await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
+        }
+
         } else {
             console.log('The event is already full');
             toast({
@@ -97,6 +102,54 @@ const ShowPosts = ({post}) => {
           console.error('Fail to join', error);
       }
     }
+
+    const createChatRoom = async (postId, members) => {
+      try {
+          const eventRef = doc(database, 'postInfo', postId);
+          const eventDoc = await getDoc(eventRef);
+          const eventData = eventDoc.data();
+          const eventTitle = eventData.Title; 
+  
+          const unreadMessages = members.reduce((acc, member) => {
+            acc[member] = 0;
+            return acc;
+          }, {});
+  
+          const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
+              postId: postId,
+              collection: 'postInfo',
+              members: [...members, user.uid],
+              name: eventTitle, 
+              lastMessage: '',
+              lastMessageSender: '',
+              lastMessageTime: new Date(),
+              unreadMessages
+          });
+  
+          const chatRoomId = chatRoomRef.id;
+          const messagesCollectionRef = collection(chatRoomRef, 'messages');
+          await addDoc(messagesCollectionRef, {}); 
+  
+          await updateDoc(eventRef, {
+              chatRoomId: chatRoomId
+          });
+  
+          await updateDoc(chatRoomRef, {
+              chatRoomId: chatRoomId
+          });
+        
+          for (const member of [...members, user.uid]) {
+              const userProfileRef = doc(database, 'userProfile', member);
+              await updateDoc(userProfileRef, {
+                  chatRooms: arrayUnion(chatRoomId)
+              });
+          }
+  
+          console.log('Chat room created successfully with ID:', chatRoomId);
+      } catch (error) {
+          console.error('Error creating chat room:', error);
+      }
+  };
       
     return (
     <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>

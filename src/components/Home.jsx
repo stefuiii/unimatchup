@@ -146,8 +146,9 @@ export const Home = () =>  {
     navigate('/createprofile');
   }
 
-
-
+  const handleChatClick = () => {
+    navigate('/chatsoverview');
+  }
 
 
   return (
@@ -161,7 +162,7 @@ export const Home = () =>  {
           <ProfileCard isOpen={isModalOpen} onClose={onModalClose} userID={userID} />
         )}
        </>
-     <ChatIcon boxSize={6} mb={7} color={'white'} />
+       <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
      <Button
       onClick={() => handleClick('sm')}
       key={'sm'}
