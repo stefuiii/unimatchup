@@ -134,7 +134,6 @@ const ShowPosts = ({post}) => {
         <Stack mt='2' spacing='3'>
           <HStack spacing={100}>
             <Heading size='md'>{post.Title}</Heading>
-            <img src={postAvatar} alt="Avatar" width="50" height="50"/>
           </HStack>
           <Text className="one-line-description" fontSize="sm">
             {post.Description}
