@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { arrayUnion, doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -27,10 +27,12 @@ export const AddTutPost = () => {
   const [date, setDate] = useState(new Date());
   const [number, setNumber] = useState(0);
   const toast = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    setIsSubmitting(true); 
     const user = auth.currentUser;
 
     if (user) {
@@ -85,9 +87,12 @@ export const AddTutPost = () => {
 
       } catch (error) {
         console.error("Error writing document: ", error);
+      } finally {
+        setIsSubmitting(false); 
       }
-    }
-    
+    } else {
+      setIsSubmitting(false); 
+    } 
     
   }
 
@@ -208,6 +213,7 @@ export const AddTutPost = () => {
         bg={'white'}
         variant='outline' 
         type="submit"
+        isDisabled={isSubmitting}
         size='sm'
         height='48px'
         width='150px'
@@ -216,7 +222,7 @@ export const AddTutPost = () => {
         padding={'0.8rem'} borderRadius={'20px'} w={'200px'} 
         alignItems={'center'}
         mb={5}
-        >Find Your Buddies!</Button>
+        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}</Button>
         </Box>
       </form>
     </Box>

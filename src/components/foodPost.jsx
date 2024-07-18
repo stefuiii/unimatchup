@@ -26,11 +26,14 @@ export const AddFoodPost = () => {
     const [location, setLocation] = useState('');
     const [date, setDate] = useState(new Date());
     const [number, setNumber] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [menu, setMenu] = useState('');
     const toast = useToast();
 
     const handleSubmit = async(e) => {
       e.preventDefault();
+      setIsSubmitting(true);
+
       const user = auth.currentUser;
       if (user) {
         const uid = user.uid;
@@ -79,8 +82,12 @@ export const AddFoodPost = () => {
           setNumber(0);
         } catch (error) {
           console.error("Error writing document: ", error);
+        } finally {
+          setIsSubmitting(false);
         }
         
+      } else {
+        setIsSubmitting(false);
       }
       
     }
@@ -226,7 +233,8 @@ export const AddFoodPost = () => {
         padding={'0.8rem'} borderRadius={'20px'} w={'200px'} 
         alignItems={'center'}
         mb={3}
-        >Find Your Buddies!</Button>
+        isDisabled={isSubmitting}
+        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}!</Button>
         </Box>
         
       </form>
