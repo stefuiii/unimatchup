@@ -389,7 +389,6 @@ export const Home = () =>  {
   <TabList>
     <Tab>Created</Tab>
     <Tab>Joined</Tab>
-    <Tab></Tab>
   </TabList>
   <TabPanels>
     <TabPanel>

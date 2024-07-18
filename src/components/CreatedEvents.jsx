@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { auth, database } from "../firebase-config.js";
 import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
-import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid } from "@chakra-ui/react";
+import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid, Spinner } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
 import "../format/oneLineDescription.css";
@@ -106,6 +106,7 @@ export const ShowAll = () => {
   const [posts, setPosts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [search] = useState('');
+  const [loading, setLoading] = useState(true);
   const postsPerPage = 4;
   const user = auth.currentUser;
 
@@ -124,6 +125,7 @@ export const ShowAll = () => {
           allPosts = [...allPosts, ...postsData];
         }
         setPosts(allPosts);
+        setLoading(false);
       }
     };
     fetchPosts();
@@ -132,6 +134,10 @@ export const ShowAll = () => {
   const removePost = (postId) => {
     setPosts(posts.filter(post => post.docID !== postId));
   };
+
+  if (loading) {
+    return <Spinner size="xl" />;
+  }
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;

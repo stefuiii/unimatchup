@@ -5,7 +5,7 @@ import { doc, getDoc, increment, updateDoc } from "firebase/firestore";
 import { Box, Heading, Button, 
          Stack, Text,  ButtonGroup,
          HStack, 
-         ChakraProvider, Grid } from "@chakra-ui/react";
+         ChakraProvider, Grid, Spinner } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
@@ -100,13 +100,13 @@ const ShowPosts = ({post, onRemovePost}) => {
       </CardBody>
       <CardFooter style={{ marginTop: '-30px' }}
         justifyContent={'left'}>
-        <ButtonGroup spacing='4' justifyContent={'flex-start'}>
+        <ButtonGroup spacing='2' justifyContent={'flex-start'}>
           <>
           <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
             Details
           </Button>
           </>
-          <Button onClick={quitEvent} size={'xs'} colorScheme="red" fontSize="xs">
+          <Button onClick={quitEvent} size={'xs'} colorScheme="red" fontSize="xs" width={50}>
             Quit
           </Button>
           <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
@@ -121,6 +121,7 @@ export const ShowAllJoint = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
     const user = auth.currentUser;
     const uid = user.uid;
@@ -148,6 +149,7 @@ export const ShowAllJoint = () => {
               }
             }
             setPosts(posts);
+            setLoading(false);
           } else {
             console.log('No joined events found!');
           }
@@ -174,6 +176,10 @@ export const ShowAllJoint = () => {
         setCurrentPage(currentPage + 1);
       }
     };
+
+    if (loading) {
+      return <Spinner size="xl" />;
+    }
 
     const handlePrevPage = () => {
       if (currentPage > 1) {
