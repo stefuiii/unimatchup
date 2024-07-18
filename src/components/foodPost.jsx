@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, Timestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -35,6 +35,7 @@ export const AddFoodPost = () => {
       if (user) {
         const uid = user.uid;
         try {
+          const userProfileRef = doc(database, 'userProfile', uid);
           const docRef = await addDoc(collection(database, "foodPost"), {
             uid: uid,
             Title: title,
@@ -45,11 +46,22 @@ export const AddFoodPost = () => {
             Menu: menu,
             docID: "",
             Joined: 0,
-            collection: "foodPost"
+            chatRoomId: "",
+            collection: "foodPost",
+            Members: [userProfileRef],
+            status: "active"
           });
 
           const docInfo = docRef.id;
           await updateDoc(docRef, { docID: docInfo});
+          const userDoc = await getDoc(userProfileRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const updatedEvents = [...userData.events, docRef];
+          await updateDoc(userProfileRef, { events: updatedEvents });
+        } else {
+          await setDoc(userProfileRef, { events: [docRef] });
+        }
           console.log("Document successfully written!");
           
           toast({
@@ -75,11 +87,11 @@ export const AddFoodPost = () => {
 
   
    return (
-    <Flex
-    bg={'#FFEFDA'}
+    <Flex 
     height="100vh" 
     alignItems="center" 
     justifyContent="center"
+    bg={"#FFEFDA"}
     >
      <Container width={400}
      backdropBlur={'true'}
@@ -93,7 +105,7 @@ export const AddFoodPost = () => {
      border ='2px solid'
      borderRadius={'20px'}
      p={0}
-     boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)'>
+     boxShadow="lg">
       
        <Box
          bg="#F4A460"

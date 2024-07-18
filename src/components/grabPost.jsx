@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDoc, collection, Timestamp, updateDoc} from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc} from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -26,6 +27,7 @@ export const AddGrabPost = () => {
     const [date, setDate] = useState(new Date());
     const [number, setNumber] = useState(0);
     const toast = useToast();
+    const navigate = useNavigate();
 
     const handleSubmit = async(e) => {
       e.preventDefault();
@@ -34,6 +36,8 @@ export const AddGrabPost = () => {
       if (user) {
         const uid = user.uid;
         try {
+          const userProfileRef = doc(database, 'userProfile', uid);
+
           const docRef = await addDoc(collection(database, "postInfo"), {
             uid: uid,
             Title: title,
@@ -43,11 +47,23 @@ export const AddGrabPost = () => {
             Number: parseFloat(number),
             docID: "",
             Joined: 0,
-            collection: "postInfo"
+            chatRoomId: "",
+            collection: "postInfo",
+            Members: [userProfileRef],
+            status: "active"
           });
 
           const docInfo = docRef.id;
           await updateDoc(docRef, { docID: docInfo});
+
+          const userDoc = await getDoc(userProfileRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const updatedEvents = [...userData.events, docRef];
+          await updateDoc(userProfileRef, { events: updatedEvents });
+        } else {
+          await setDoc(userProfileRef, { events: [docRef] });
+        }
 
           console.log("Document successfully written!");
           
@@ -76,10 +92,10 @@ export const AddGrabPost = () => {
   
    return (
     <Flex 
-    bg={'#FFEFDA'}
     height="100vh" 
     alignItems="center" 
     justifyContent="center"
+    bg={"#FFEFDA"}
     >
      <Container width={400}
      backdropBlur={'true'}
@@ -90,7 +106,7 @@ export const AddGrabPost = () => {
      border ='2px solid'
      borderRadius={'20px'}
      p={0}
-     boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)'>
+     boxShadow={'lg'}>
       
        <Box
          bg="#F4A460"
@@ -149,7 +165,7 @@ export const AddGrabPost = () => {
           id="date" 
           mb="3" 
           width="150px"
-          color={'gray'}
+          color={'white'}
           isRequired>
             <FormLabel mb={'0'}>Date and Time</FormLabel>
             <DatePicker

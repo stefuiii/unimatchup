@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -21,65 +21,82 @@ import { Box,
 import { auth, database } from "../firebase-config";
 
 export const AddTutPost = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [location, setLocation] = useState('');
-    const [date, setDate] = useState(new Date());
-    const [number, setNumber] = useState(0);
-    const toast = useToast();
-    const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [number, setNumber] = useState(0);
+  const toast = useToast();
+  const navigate = useNavigate();
 
-    const handleSubmit = async(e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (user) {
-        const uid = user.uid;
-        try {
-          const docRef = await addDoc(collection(database, "groupPost"), {
-            uid: uid,
-            Title: title,
-            Description: description,
-            Location: location,
-            Date: Timestamp.fromDate(date),
-            Number: parseFloat(number),
-            docID: "",
-            Joined: 0,
-            collection: "groupPost"
-          });
-          const docInfo = docRef.id;
-          await updateDoc(docRef, { docID: docInfo});
-          console.log("Document successfully written!");
-          
-          toast({
-            title: "Post created.",
-            description: "Your post has been successfully created.",
-            status: "success",
-            duration: 5000,
-            isClosable: true,
-          });
-  
-          setTitle('');
-          setDescription('');
-          setLocation('');
-          setDate('');
-          setNumber(0);
-  
-          navigate('/home');
-        } catch (error) {
-          console.error("Error writing document: ", error);
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+
+    if (user) {
+      const uid = user.uid;
+      try {
+        const userProfileRef = doc(database, 'userProfile', uid);
+
+        const docRef = await addDoc(collection(database, "groupPost"), {
+          uid: uid,
+          Title: title,
+          Description: description,
+          Location: location,
+          Date: Timestamp.fromDate(date),
+          Number: parseFloat(number),
+          docID: "",
+          Joined: 0,
+          chatRoomId: "",
+          collection: "groupPost",
+          Members: [userProfileRef],
+          status: "active"
+        });
+
+        const docInfo = docRef.id;
+        await updateDoc(docRef, { 
+          docID: docInfo, 
+        });
+
+        const userDoc = await getDoc(userProfileRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const updatedEvents = [...userData.events, docRef];
+          await updateDoc(userProfileRef, { events: updatedEvents });
+        } else {
+          await setDoc(userProfileRef, { events: [docRef] });
         }
-        
-      }
-      
-    }
 
-  
-   return (
+        console.log("Document successfully written!");
+        
+        toast({
+          title: "Post created.",
+          description: "Your post has been successfully created.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        setTitle('');
+        setDescription('');
+        setLocation('');
+        setDate('');
+        setNumber(0);
+
+      } catch (error) {
+        console.error("Error writing document: ", error);
+      }
+    }
+    
+    
+  }
+
+  return (
     <Flex 
-    bg={'#FFEFDA'}
     height="100vh" 
     alignItems="center" 
     justifyContent="center" 
+    bg={"#FFEFDA"}
     >
      <Container width={400}
      backdropBlur={'true'}
@@ -90,7 +107,8 @@ export const AddTutPost = () => {
      border ='2px solid'
      borderRadius={'20px'}
      p={0}
-     boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)'>
+     boxShadow={'lg'}>
+    
       
        <Box
          bg="#F4A460"
