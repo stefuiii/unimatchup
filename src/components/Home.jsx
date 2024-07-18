@@ -161,7 +161,7 @@ export const Home = () =>  {
       <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
        <>
        <Tooltip hasArrow label="Log Out" aria-label="Log Out Tooltip" bg="white" color="black">
-        <Button onClick={handleLogout} bg="none" mb={5} mr={1150}>
+        <Button onClick={handleLogout} bg="none" mb={5} mr={-5}>
           <img src={logoutIcon} alt="Avatar" width="25" height="25"/>
         </Button>
        </Tooltip>

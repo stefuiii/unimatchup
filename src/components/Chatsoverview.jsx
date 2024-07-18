@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  ChakraProvider,
-  Flex,
-  Heading,
-  VStack,
-  Text,
-  Avatar,
-  HStack,
-  Highlight,
-  Input,
-  InputGroup,
-  InputLeftElement,
-} from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
+import { Box, ChakraProvider, Flex, Heading, VStack, Text, Avatar,
+         Input, InputGroup, InputLeftElement, Button, Drawer, DrawerBody,
+         DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, Highlight,
+         useDisclosure, Tooltip
+        } from '@chakra-ui/react';
+import { SearchIcon, ArrowBackIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { auth, database } from '../firebase-config';
 import myAvatar from "../icons/avatar13.svg";
 import dayjs from 'dayjs';
+import '../format/chatStyles.css'; 
 
 export const Chatsoverview = () => {
   const [search, setSearch] = useState('');
@@ -26,6 +18,7 @@ export const Chatsoverview = () => {
   const [filteredChats, setFilteredChats] = useState([]);
   const navigate = useNavigate();
   const user = auth.currentUser;
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     const fetchChats = () => {
@@ -87,32 +80,78 @@ export const Chatsoverview = () => {
     navigate(`/chatpage/${chatId}`);
   };
 
+  const handleFilterEvents = (collectionName) => {
+    const filteredChats = chats.filter(chat => chat.collection === collectionName);
+    setFilteredChats(filteredChats);
+    onClose(); 
+  };
+
   return (
     <ChakraProvider>
       <Box bg="#FFEFDA" minH="100vh" p={5}>
-        <Flex justify="center" mb={5}>
+        <Flex justify="space-between" align="center" mb={5}>
+          <Tooltip hasArrow label="Return Home" aria-label="Chat Tooltip" bg="white" color="black">
+            <ArrowBackIcon color="#E3C195" boxSize={10} onClick={() => navigate('/home')}/>
+          </Tooltip>
           <Heading lineHeight='tall' whiteSpace='pre-line'>
             <Highlight
               query='Chat List'
-              styles={{ px: '8', py: '1', rounded: 'full', bg: '#FFBF6A' }}
+              styles={{ px: '8', py: '1', rounded: 'full', bg: '#CCAC81', color: "#FFF9F2", textShadow: '1px 1px 2px #E3C195',
+                border: 'white'
+              }}
             >
               {`Chat List`}
             </Highlight>
           </Heading>
+          <Button
+            colorScheme="teal"
+            onClick={onOpen}
+            bg="#E3C195"
+            color="white"
+            _hover={{ bg: '#F2E6D6' }}
+            boxShadow="none"
+            borderRadius={20}
+            textShadow={'gray'}
+          >
+            Filter by Events
+          </Button>
         </Flex>
+        <Drawer placement="right" bg="FFBF6A" onClose={onClose} isOpen={isOpen}>
+          <DrawerOverlay>
+            <DrawerContent>
+              <DrawerCloseButton />
+              <DrawerHeader>Filter by Events</DrawerHeader>
+              <DrawerBody>
+                <Button onClick={() => handleFilterEvents('postInfo')} mb={3} w="100%" variant="outline">
+                  Grab
+                </Button>
+                <Button onClick={() => handleFilterEvents('foodPost')} mb={3} w="100%" variant="outline">
+                  Food
+                </Button>
+                <Button onClick={() => handleFilterEvents('sportPost')} mb={3} w="100%" variant="outline">
+                  Sport
+                </Button>
+                <Button onClick={() => handleFilterEvents('groupPost')} mb={3} w="100%" variant="outline">
+                  Tut Group
+                </Button>
+              </DrawerBody>
+            </DrawerContent>
+          </DrawerOverlay>
+        </Drawer>
         <InputGroup mb={5}>
           <InputLeftElement pointerEvents="none">
-            <SearchIcon mt={3} color="gray.300" />
+            <SearchIcon color="gray.300" mt={3} />
           </InputLeftElement>
           <Input
-            bg={'white'}
             type="text"
             placeholder="Search Chats"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            bg={'white'}
+            borderRadius={10}
           />
         </InputGroup>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={4} align="stretch" className="chat-container">
           {filteredChats.map(chat => (
             <Box
               key={chat.id}

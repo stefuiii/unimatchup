@@ -6,6 +6,8 @@ import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
 import "../format/oneLineDescription.css";
 import EventDetailsModal from "./EventDetailsModal.jsx";
+import { AiOutlineTeam } from "react-icons/ai";
+
 
 const ShowPosts = ({ post, onDelete }) => {
   const toast = useToast();
@@ -69,7 +71,7 @@ const ShowPosts = ({ post, onDelete }) => {
 
   const date = post.Date.toDate().toLocaleString();
   return (
-    <Card maxW='sm' width="150px" height="200px" justifyContent={'center'}>
+    <Card maxW='sm' width="150px" height="250px" justifyContent={'center'}>
       <CardBody>
         <Stack spacing='3'>
           <HStack spacing={100}>
@@ -83,6 +85,10 @@ const ShowPosts = ({ post, onDelete }) => {
         <HStack mt={'3'} spacing={'3'}>
           <InfoIcon boxSize={4} color={"gray.600"} />
           <Text fontSize="xs">{post.Location}</Text>
+        </HStack>
+        <HStack mt={'3'} spacing={'3'}>
+          <AiOutlineTeam size={20} color={"gray.600"} />
+          <Text fontSize="xs">{`${post.Joined} / ${post.Number}`}</Text>
         </HStack>
       </CardBody>
       <CardFooter style={{ marginTop: '-30px' }} justifyContent={'left'}>

@@ -4,7 +4,7 @@ import { auth, database} from "../firebase-config";
 import { doc, setDoc, getDoc, updateDoc} from 'firebase/firestore';
 import { Box, Heading, FormControl, FormLabel, 
          Input, Button, Card, CardHeader, CardBody, Stack, Flex,
-         Select, HStack, useToast, InputGroup, InputLeftElement, InputRightElement} from "@chakra-ui/react";
+         Select, HStack, useToast, InputGroup, InputRightElement} from "@chakra-ui/react";
 import myAvatar from "../icons/avatar13.svg"
 import {
   Tag,
@@ -51,18 +51,12 @@ export const CreateProfile = () => {
         const newHobbies = [...hobbies, hobby.trim()];
         setHobbies(newHobbies);
         setHobby('');
-        await updateDoc(doc(database, 'userProfile', user.uid), {
-          hobbies: newHobbies,
-        });
       }
     };
 
     const handleRemoveHobby = async (index) => {
       const newHobbies = hobbies.filter((_, i) => i !== index);
       setHobbies(newHobbies);
-      await updateDoc(doc(database, 'userProfile', user.uid), {
-        hobbies: newHobbies,
-      });
     };
 
     const handleSubmit = async(e) => {
@@ -83,7 +77,7 @@ export const CreateProfile = () => {
               Gender: gender,
               Major: major,
               events: [],
-              hobbies: [] 
+              hobbies: hobbies
             });
             console.log("Document successfully written!");
             
