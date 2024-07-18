@@ -161,6 +161,9 @@ export const ShowAll = () => {
           alignItems: 'center',
           flexDirection: 'column'
         }}>
+          <Text fontSize="xs">
+            As you are the event owner, deleting the event will remove the event and chatroom from all current participants
+          </Text>
         <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} onDelete={removePost} />

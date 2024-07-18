@@ -19,6 +19,7 @@ import { CreateProfile } from './components/userProfile';
 import { Guide } from './components/guide';
 import { Chatsoverview} from './components/Chatsoverview';
 import { ChatPage } from './components/ChatPage';
+import './chatStyles.css';
 
 function App() {
   const [currentForm, setCurrentForm] = useState('landing');

@@ -11,13 +11,14 @@ import {
   InputGroup,
   InputRightElement,
   Button,
-  Heading
+  Heading,
+  useToast
 } from '@chakra-ui/react';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import dayjs from 'dayjs';
 import { collection, query, orderBy, onSnapshot, addDoc, Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, database } from '../firebase-config';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export const ChatPage = () => {
   const { chatRoomId } = useParams();
@@ -28,6 +29,8 @@ export const ChatPage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const messagesEndRef = useRef(null);
   const user = auth.currentUser;
+  const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('ChatRoomId:', chatRoomId); 
@@ -79,13 +82,31 @@ export const ChatPage = () => {
             } else {
               console.error('Event not found');
             }
+
+            const unsubscribeEvent = onSnapshot(eventRef, (doc) => {
+              if (doc.exists()) {
+              const eventData = doc.data();
+              if (eventData.status === 'deleted') {
+              toast({
+              title: 'Event Terminated',
+              description: 'This event has been terminated by the owner.',
+              status: 'warning',
+              duration: null,
+              isClosable: true,
+              onCloseComplete: () => navigate('/chatsoverview'),
+                   });
+                 }
+                }
+             });
+
           } catch (error) {
             console.error('Error fetching event details:', error);
           }
         } else {
           console.error('Invalid collection or postId');
         }
-        
+         
+
         const participantPromises = chatRoomData.members.map(async (uid) => {
           const userProfileRef = doc(database, 'userProfile', uid);
           const userProfileDoc = await getDoc(userProfileRef);
@@ -245,7 +266,7 @@ export const ChatPage = () => {
                 <Avatar src={participant.avatar} name={participant.name} />
                 <Text>
                   {participant.nickName}
-                  {participant.uid === user.uid && ( // Replace 'currentUserUID' with the actual current user ID
+                  {participant.uid === user.uid && ( 
                     <Text as="span" fontSize="sm" color="gray.500" ml={2}>
                       YOU
                     </Text>

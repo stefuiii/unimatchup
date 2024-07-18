@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Box, ChakraProvider, Flex, HStack, Stack } from '@chakra-ui/react'
+import { Box, ChakraProvider, Flex, HStack, Stack, Tooltip } from '@chakra-ui/react'
 import { doc, getDoc} from "firebase/firestore";
 import {
   Drawer,
@@ -35,6 +35,7 @@ import foodIcon from "../icons/一起吃饭.svg"
 import sportIcon from "../icons/体育锻炼.svg"
 import groupIcon from "../icons/工作汇报.svg"
 import profile from "../icons/人员.svg"
+import logoutIcon from "../icons/退出.svg"
 import { auth, database } from "../firebase-config"
 import ProfileCard from "./ProfileCard";
 
@@ -150,20 +151,32 @@ export const Home = () =>  {
     navigate('/chatsoverview');
   }
 
+  const handleLogout = () => {
+    navigate('/landing');
+  }
 
 
   return (
     <ChakraProvider>
       <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
        <>
-       <Button onClick={handleModalOpen} bg={'none'} mb={5}>
-        <img src={profile} alt="Avatar" width="30" height="30" />
-       </Button>
+       <Tooltip hasArrow label="Log Out" aria-label="Log Out Tooltip" bg="white" color="black">
+        <Button onClick={handleLogout} bg="none" mb={5} mr={1150}>
+          <img src={logoutIcon} alt="Avatar" width="25" height="25"/>
+        </Button>
+       </Tooltip>
+       <Tooltip hasArrow label="Profile" aria-label="Profile Tooltip" bg="white" color="black">
+         <Button onClick={handleModalOpen} bg={'none'} mb={5}>
+          <img src={profile} alt="Avatar" width="30" height="30" />
+         </Button>
+       </Tooltip>
        {shouldRenderProfileCard && (
           <ProfileCard isOpen={isModalOpen} onClose={onModalClose} userID={userID} />
         )}
        </>
-       <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
+       <Tooltip hasArrow label="Chat" aria-label="Chat Tooltip" bg="white" color="black">
+         <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
+       </Tooltip>
      <Button
       onClick={() => handleClick('sm')}
       key={'sm'}
@@ -376,7 +389,6 @@ export const Home = () =>  {
   <TabList>
     <Tab>Created</Tab>
     <Tab>Joined</Tab>
-    <Tab></Tab>
   </TabList>
   <TabPanels>
     <TabPanel>
