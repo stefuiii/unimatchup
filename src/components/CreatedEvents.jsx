@@ -1,22 +1,16 @@
 import React, { useEffect, useState } from "react";
-//import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
-import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where} from "firebase/firestore";
-import { Box, Heading, Button, Stack, Text, ButtonGroup,
-         HStack, ChakraProvider, Grid } from "@chakra-ui/react";
+import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
+import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react'
-import "../format/oneLineDescription.css"
+import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
+import "../format/oneLineDescription.css";
 import EventDetailsModal from "./EventDetailsModal.jsx";
 
-const ShowPosts = ({post}) => {
+const ShowPosts = ({ post, onDelete }) => {
   const toast = useToast();
 
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose
-  } = useDisclosure();
+  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
 
   const deleteEvent = async () => {
     try {
@@ -26,16 +20,27 @@ const ShowPosts = ({post}) => {
 
       await updateDoc(eventRef, { status: 'deleted' });
 
-      const chatRoomRef = doc(database, 'chatRooms', eventData.chatRoomId);
-      await deleteDoc(chatRoomRef);
+      if (eventData.chatRoomId) {
+        const chatRoomRef = doc(database, 'chatRooms', eventData.chatRoomId);
+        await deleteDoc(chatRoomRef);
 
-      for (const memberRef of eventData.Members) {
-        const memberDoc = await getDoc(memberRef);
-        if (memberDoc.exists()) {
-          const memberData = memberDoc.data();
-          const updatedEvents = memberData.events.filter(event => event.id !== eventRef.id);
-          const updatedChatRooms = memberData.chatRooms.filter(chatRoom => chatRoom.id !== chatRoomRef.id);
-          await updateDoc(memberRef, { events: updatedEvents, chatRooms: updatedChatRooms });
+        for (const memberRef of eventData.Members) {
+          const memberDoc = await getDoc(memberRef);
+          if (memberDoc.exists()) {
+            const memberData = memberDoc.data();
+            const updatedEvents = memberData.events.filter(event => event.id !== eventRef.id);
+            const updatedChatRooms = memberData.chatRooms.filter(chatRoom => chatRoom.id !== chatRoomRef.id);
+            await updateDoc(memberRef, { events: updatedEvents, chatRooms: updatedChatRooms });
+          }
+        }
+      } else {
+        for (const memberRef of eventData.Members) {
+          const memberDoc = await getDoc(memberRef);
+          if (memberDoc.exists()) {
+            const memberData = memberDoc.data();
+            const updatedEvents = memberData.events.filter(event => event.id !== eventRef.id);
+            await updateDoc(memberRef, { events: updatedEvents });
+          }
         }
       }
 
@@ -48,6 +53,8 @@ const ShowPosts = ({post}) => {
         duration: 3000,
         isClosable: true,
       });
+
+      onDelete(post.docID);
     } catch (error) {
       console.error("Error deleting event: ", error);
       toast({
@@ -59,32 +66,31 @@ const ShowPosts = ({post}) => {
       });
     }
   }
-    
-    const date = post.Date.toDate().toLocaleString();
-    return (
+
+  const date = post.Date.toDate().toLocaleString();
+  return (
     <Card maxW='sm' width="150px" height="200px" justifyContent={'center'}>
       <CardBody>
         <Stack spacing='3'>
           <HStack spacing={100}>
             <Heading size='xs'>{post.Title}</Heading>
           </HStack>
-      </Stack>
-      <HStack mt={'4'} spacing={'3'}>
-        <CalendarIcon boxSize={4} color={"gray.600"}/>
-        <Text fontSize="xs">{date}</Text>
-      </HStack>
-      <HStack mt={'3'} spacing={'3'}>
-        <InfoIcon boxSize={4} color={"gray.600"}/>
-        <Text fontSize="xs">{post.Location}</Text>
-      </HStack>
+        </Stack>
+        <HStack mt={'4'} spacing={'3'}>
+          <CalendarIcon boxSize={4} color={"gray.600"} />
+          <Text fontSize="xs">{date}</Text>
+        </HStack>
+        <HStack mt={'3'} spacing={'3'}>
+          <InfoIcon boxSize={4} color={"gray.600"} />
+          <Text fontSize="xs">{post.Location}</Text>
+        </HStack>
       </CardBody>
-      <CardFooter style={{ marginTop: '-30px' }}
-        justifyContent={'left'}>
+      <CardFooter style={{ marginTop: '-30px' }} justifyContent={'left'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
           <>
-          <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
-            Details
-          </Button>
+            <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
+              Details
+            </Button>
           </>
           <Button onClick={deleteEvent} size={'xs'} colorScheme="red" fontSize="xs">
             Delete
@@ -93,88 +99,90 @@ const ShowPosts = ({post}) => {
         </ButtonGroup>
       </CardFooter>
     </Card>
-    );
-    
-
+  );
 }
 
 export const ShowAll = () => {
-    const [posts, setPosts] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [search] = useState('');
-    const postsPerPage = 4;
-    const user = auth.currentUser;
+  const [posts, setPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [search] = useState('');
+  const postsPerPage = 4;
+  const user = auth.currentUser;
 
-    useEffect (() => {
-        const fetchPosts = async () => {
-            if (user) {
-              let allPosts = [];
-              const collections = ["postInfo", "foodPost", "sportPost", "groupPost"];
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (user) {
+        let allPosts = [];
+        const collections = ["postInfo", "foodPost", "sportPost", "groupPost"];
 
-              for (const perCollect of collections) {
-                const postsCollection = query(collection(database, perCollect), 
-                where ("uid", "==", user.uid),
-                orderBy("Date", "asc"));
-                const querySnapshot = await getDocs(postsCollection);
-                const postsData = querySnapshot.docs.map(doc => doc.data());
-                allPosts = [...allPosts, ...postsData];
-              }
-              setPosts(allPosts);
-            }
-        };
-        fetchPosts();
-    }, [user]);
-
-    const removePost = (postId) => {
-      setPosts(posts.filter(post => post.docID !== postId));
-    };
-
-    const indexOfLastPost = currentPage * postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const filteredPosts = posts.filter(post => 
-      post.Title.toLowerCase().includes(search.toLowerCase())
-    );
-    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
-
-    const handleNextPage = () => {
-      if (currentPage < Math.ceil(posts.length / postsPerPage)) {
-        setCurrentPage(currentPage + 1);
+        for (const perCollect of collections) {
+          const postsCollection = query(collection(database, perCollect),
+            where("uid", "==", user.uid),
+            orderBy("Date", "asc"));
+          const querySnapshot = await getDocs(postsCollection);
+          const postsData = querySnapshot.docs.map(doc => ({ ...doc.data(), docID: doc.id, collection: perCollect }));
+          allPosts = [...allPosts, ...postsData];
+        }
+        setPosts(allPosts);
       }
     };
+    fetchPosts();
+  }, [user]);
 
-    const handlePrevPage = () => {
-      if (currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-    };
+  const removePost = (postId) => {
+    setPosts(posts.filter(post => post.docID !== postId));
+  };
 
-    return (
-        <ChakraProvider>
-          <Box 
-            style={{ display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            flexDirection: 'column'}}>
-           <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const filteredPosts = posts.filter(post =>
+    post.Title.toLowerCase().includes(search.toLowerCase())
+  );
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const handleNextPage = () => {
+    if (currentPage < Math.ceil(posts.length / postsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  return (
+    <ChakraProvider>
+      <Box
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column'
+        }}>
+        <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
-            <ShowPosts key={index} post={post} />
+            <ShowPosts key={index} post={post} onDelete={removePost} />
           ))}
         </Grid>
-          <Box style={{ display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            flexDirection: 'column',
-            marginTop: '30px'}}>
+        <Box style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          marginTop: '30px'
+        }}>
           <ButtonGroup spacing='4'>
-          <Button onClick={handlePrevPage} disabled={currentPage === 1}>
-            Previous
-          </Button>
-          <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(posts.length / postsPerPage)}>
-            Next
-          </Button>
-        </ButtonGroup>
-          </Box>
-          </Box>
-        </ChakraProvider>
-    );
+            <Button onClick={handlePrevPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(posts.length / postsPerPage)}>
+              Next
+            </Button>
+          </ButtonGroup>
+        </Box>
+      </Box>
+    </ChakraProvider>
+  );
 }

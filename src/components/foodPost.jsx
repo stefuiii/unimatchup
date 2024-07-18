@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDoc, collection, doc, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, Timestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -54,6 +54,14 @@ export const AddFoodPost = () => {
 
           const docInfo = docRef.id;
           await updateDoc(docRef, { docID: docInfo});
+          const userDoc = await getDoc(userProfileRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const updatedEvents = [...userData.events, docRef];
+          await updateDoc(userProfileRef, { events: updatedEvents });
+        } else {
+          await setDoc(userProfileRef, { events: [docRef] });
+        }
           console.log("Document successfully written!");
           
           toast({

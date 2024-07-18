@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { arrayUnion, doc, setDoc, addDoc, collection, Timestamp, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { Box, 
          Text,
          Button, 
@@ -49,15 +49,23 @@ export const AddTutPost = () => {
           Joined: 0,
           chatRoomId: "",
           collection: "groupPost",
-          Members: [],
+          Members: [userProfileRef],
           status: "active"
         });
 
         const docInfo = docRef.id;
         await updateDoc(docRef, { 
           docID: docInfo, 
-          Members: arrayUnion(userProfileRef) 
         });
+
+        const userDoc = await getDoc(userProfileRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const updatedEvents = [...userData.events, docRef];
+          await updateDoc(userProfileRef, { events: updatedEvents });
+        } else {
+          await setDoc(userProfileRef, { events: [docRef] });
+        }
 
         console.log("Document successfully written!");
         
