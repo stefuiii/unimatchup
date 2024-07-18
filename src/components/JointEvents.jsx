@@ -137,7 +137,12 @@ export const ShowAllJoint = () => {
             for (const eventRef of profileData.events) {
               const eventDoc = await getDoc(eventRef);
               if (eventDoc.exists()) {
-                posts.push(eventDoc.data());
+                const eventData = eventDoc.data();
+                if (eventData.uid !== uid) {
+                  posts.push(eventData);
+                } else {
+                  console.log('Skipping event from current user');
+                }
               } else {
                 console.log('No such event document!');
               }

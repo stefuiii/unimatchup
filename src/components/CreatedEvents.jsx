@@ -86,7 +86,7 @@ const ShowPosts = ({ post, onDelete }) => {
         </HStack>
       </CardBody>
       <CardFooter style={{ marginTop: '-30px' }} justifyContent={'left'}>
-        <ButtonGroup spacing='4' justifyContent={'flex-start'}>
+        <ButtonGroup spacing='2' justifyContent={'flex-start'}>
           <>
             <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
               Details
