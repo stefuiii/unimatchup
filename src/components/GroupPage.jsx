@@ -78,9 +78,9 @@ const ShowPosts = ({post}) => {
   
   const handleAddedMember = async() => {
     try {
-        const docRef = doc(database, 'groupPost', post.docID);
-        const docCollect = await getDoc(docRef);
-        const docData = docCollect.data();
+      const docRef = doc(database, 'groupPost', post.docID);
+      const docCollect = await getDoc(docRef);
+      const docData = docCollect.data();
 
       if (user.uid === docData.uid){
         toast({
@@ -114,77 +114,21 @@ const ShowPosts = ({post}) => {
           await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
         }
 
-            console.log("Newly added members:", newlyAdded);
-
-            if (newlyAdded === post.Number) {
-                console.log('Creating chat room...');
-                await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
-            }
-
-        } else {
-            console.log('The event is already full');
-            toast({
-                title: "Join Failed",
-                description: "The event is already full",
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-            });
-        }
+      } else {
+          console.log('The event is already full');
+          toast({
+            title: "Join Failed",
+            description: "The event is already full",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+      }
     } catch (error) {
         console.error('Fail to join', error);
     }
-}
-
-const createChatRoom = async (postId, members) => {
-  try {
-      const eventRef = doc(database, 'groupPost', postId);
-      const eventDoc = await getDoc(eventRef);
-      const eventData = eventDoc.data();
-      const eventTitle = eventData.Title; 
-
-      const unreadMessages = members.reduce((acc, member) => {
-        acc[member] = 0;
-        return acc;
-      }, {});
-
-      const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
-          postId: postId,
-          collection: 'groupPost',
-          members: [...members, user.uid],
-          name: eventTitle, 
-          lastMessage: '',
-          lastMessageSender: '',
-          lastMessageTime: new Date(),
-          unreadMessages
-      });
-
-      const chatRoomId = chatRoomRef.id;
-      const messagesCollectionRef = collection(chatRoomRef, 'messages');
-      await addDoc(messagesCollectionRef, {}); 
-
-      await updateDoc(eventRef, {
-          chatRoomId: chatRoomId
-      });
-
-      await updateDoc(chatRoomRef, {
-          chatRoomId: chatRoomId
-      });
-    
-      for (const member of [...members, user.uid]) {
-          const userProfileRef = doc(database, 'userProfile', member);
-          await updateDoc(userProfileRef, {
-              chatRooms: arrayUnion(chatRoomId)
-          });
-      }
-
-      console.log('Chat room created successfully with ID:', chatRoomId);
-  } catch (error) {
-      console.error('Error creating chat room:', error);
   }
-};
-    
-  return (
+    return (
     <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>
       <CardBody>
         <Stack mt='2' spacing='3'>
@@ -194,21 +138,21 @@ const createChatRoom = async (postId, members) => {
           <Text className="one-line-description" fontSize="sm">
             {post.Description}
           </Text>
-        </Stack>
-        <HStack mt={'4'} spacing={'3'}>
-          <CalendarIcon boxSize={4} color={"gray.600"} />
-          <Text fontSize="sm">{date}</Text>
-        </HStack>
-        <HStack mt={'3'} spacing={'3'}>
-          <InfoIcon boxSize={4} color={"gray.600"} />
-          <Text fontSize="sm">{post.Location}</Text>
-        </HStack>
+      </Stack>
+      <HStack mt={'4'} spacing={'3'}>
+        <CalendarIcon boxSize={4} color={"gray.600"}/>
+        <Text fontSize="sm">{date}</Text>
+      </HStack>
+      <HStack mt={'3'} spacing={'3'}>
+        <InfoIcon boxSize={4} color={"gray.600"}/>
+        <Text fontSize="sm">{post.Location}</Text>
+      </HStack>
       </CardBody>
       <CardFooter style={{ marginTop: '-20px' }}
         justifyContent={'left'} mt={'0'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
           <Button onClick={handleAddedMember}
-            variant='solid' colorScheme='blue' fontSize="xs">
+          variant='solid' colorScheme='blue' fontSize="xs">
             Join Us({added}/{post.Number})
           </Button>
           <>
@@ -220,7 +164,7 @@ const createChatRoom = async (postId, members) => {
         </ButtonGroup>
       </CardFooter>
     </Card>
-  );
+    );
 }
 
 export const ShowGroup = () => {
@@ -241,24 +185,24 @@ export const ShowGroup = () => {
         fetchPosts();
     }, []);
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const filteredPosts = posts.filter(post =>
-    post.Title.toLowerCase().includes(search.toLowerCase())
-  );
-  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const filteredPosts = posts.filter(post => 
+      post.Title.toLowerCase().includes(search.toLowerCase())
+    );
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
-  const handleNextPage = () => {
-    if (currentPage < Math.ceil(posts.length / postsPerPage)) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+    const handleNextPage = () => {
+      if (currentPage < Math.ceil(posts.length / postsPerPage)) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+    const handlePrevPage = () => {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
 
     return (
         <ChakraProvider>
@@ -285,7 +229,7 @@ export const ShowGroup = () => {
             <HStack spacing={'4'} mt={0}>
             <InputGroup>
               <InputLeftElement pointerEvents='none'>
-                <SearchIcon marginTop={'3'} color='gray.300' />
+                <SearchIcon marginTop={'3'}color='gray.300' />
               </InputLeftElement>
               <Input 
               bg={'white'}
@@ -302,24 +246,22 @@ export const ShowGroup = () => {
             <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
-              <ShowPosts key={index} post={post} />
+            <ShowPosts key={index} post={post} />
             ))}
           </HStack>
-          <Box style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+          <Box style={{ display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
             flexDirection: 'column',
-            marginTop: '30px'
-          }}>
-            <ButtonGroup spacing='4'>
-              <Button onClick={handlePrevPage} disabled={currentPage === 1}>
-                Previous
-              </Button>
-              <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(posts.length / postsPerPage)}>
-                Next
-              </Button>
-            </ButtonGroup>
+            marginTop: '30px'}}>
+          <ButtonGroup spacing='4'>
+          <Button onClick={handlePrevPage} disabled={currentPage === 1}>
+            Previous
+          </Button>
+          <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(posts.length / postsPerPage)}>
+            Next
+          </Button>
+        </ButtonGroup>
           </Box>
           </>
           )}
