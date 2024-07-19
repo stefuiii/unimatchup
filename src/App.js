@@ -19,7 +19,9 @@ import { CreateProfile } from './components/userProfile';
 import { Guide } from './components/guide';
 import { Chatsoverview} from './components/Chatsoverview';
 import { ChatPage } from './components/ChatPage';
-import './chatStyles.css';
+import { TermsOfService } from "./components/Terms"; 
+
+
 
 function App() {
   const [currentForm, setCurrentForm] = useState('landing');
@@ -49,6 +51,7 @@ function App() {
         <Route path="/guide" element={<Guide />} />
         <Route path="/chatsoverview" element={<Chatsoverview />} />
         <Route path="/chatpage/:chatRoomId" element={<ChatPage />} />
+        <Route path="/terms-of-service" element={<TermsOfService/>} />
       </Routes>
     </Router>
     </ChakraProvider>

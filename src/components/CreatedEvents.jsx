@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { auth, database } from "../firebase-config.js";
 import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
-import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid } from "@chakra-ui/react";
+import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid, Spinner } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
 import "../format/oneLineDescription.css";
 import EventDetailsModal from "./EventDetailsModal.jsx";
+import { AiOutlineTeam } from "react-icons/ai";
+
 
 const ShowPosts = ({ post, onDelete }) => {
   const toast = useToast();
@@ -69,7 +71,7 @@ const ShowPosts = ({ post, onDelete }) => {
 
   const date = post.Date.toDate().toLocaleString();
   return (
-    <Card maxW='sm' width="150px" height="200px" justifyContent={'center'}>
+    <Card maxW='sm' width="150px" height="250px" justifyContent={'center'}>
       <CardBody>
         <Stack spacing='3'>
           <HStack spacing={100}>
@@ -84,9 +86,13 @@ const ShowPosts = ({ post, onDelete }) => {
           <InfoIcon boxSize={4} color={"gray.600"} />
           <Text fontSize="xs">{post.Location}</Text>
         </HStack>
+        <HStack mt={'3'} spacing={'3'}>
+          <AiOutlineTeam size={20} color={"gray.600"} />
+          <Text fontSize="xs">{`${post.Joined} / ${post.Number}`}</Text>
+        </HStack>
       </CardBody>
       <CardFooter style={{ marginTop: '-30px' }} justifyContent={'left'}>
-        <ButtonGroup spacing='4' justifyContent={'flex-start'}>
+        <ButtonGroup spacing='2' justifyContent={'flex-start'}>
           <>
             <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
               Details
@@ -106,6 +112,7 @@ export const ShowAll = () => {
   const [posts, setPosts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [search] = useState('');
+  const [loading, setLoading] = useState(true);
   const postsPerPage = 4;
   const user = auth.currentUser;
 
@@ -124,6 +131,7 @@ export const ShowAll = () => {
           allPosts = [...allPosts, ...postsData];
         }
         setPosts(allPosts);
+        setLoading(false);
       }
     };
     fetchPosts();
@@ -132,6 +140,10 @@ export const ShowAll = () => {
   const removePost = (postId) => {
     setPosts(posts.filter(post => post.docID !== postId));
   };
+
+  if (loading) {
+    return <Spinner size="xl" />;
+  }
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -161,9 +173,6 @@ export const ShowAll = () => {
           alignItems: 'center',
           flexDirection: 'column'
         }}>
-          <Text fontSize="xs">
-            As you are the event owner, deleting the event will remove the event and chatroom from all current participants
-          </Text>
         <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} onDelete={removePost} />

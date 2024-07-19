@@ -26,11 +26,13 @@ export const AddGrabPost = () => {
     const [location, setLocation] = useState('');
     const [date, setDate] = useState(new Date());
     const [number, setNumber] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToast();
     const navigate = useNavigate();
 
     const handleSubmit = async(e) => {
       e.preventDefault();
+      setIsSubmitting(true);
       const user = auth.currentUser;
 
       if (user) {
@@ -83,8 +85,12 @@ export const AddGrabPost = () => {
   
         } catch (error) {
           console.error("Error writing document: ", error);
+        } finally {
+          setIsSubmitting(false);
         }
-      }
+      } else {
+        setIsSubmitting(false); 
+      } 
       
       
     }
@@ -95,6 +101,7 @@ export const AddGrabPost = () => {
     height="100vh" 
     alignItems="center" 
     justifyContent="center"
+    bg={"#FFEFDA"}
     >
      <Container width={400}
      backdropBlur={'true'}
@@ -104,7 +111,8 @@ export const AddGrabPost = () => {
      color='white' 
      border ='2px solid'
      borderRadius={'20px'}
-     p={0}>
+     p={0}
+     boxShadow={'lg'}>
       
        <Box
          bg="#F4A460"
@@ -212,7 +220,8 @@ export const AddGrabPost = () => {
         padding={'0.8rem'} borderRadius={'20px'} w={'200px'} 
         alignItems={'center'}
         mb={5}
-        >Find Your Buddies!</Button>
+        isDisabled={isSubmitting}
+        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}</Button>
         </Box>
       </form>
     </Box>

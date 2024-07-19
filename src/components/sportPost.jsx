@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { doc, setDoc, addDoc, collection, getDoc, Timestamp, updateDoc} from 'firebase/firestore';
@@ -27,10 +26,12 @@ export const AddSportPost = () => {
     const [location, setLocation] = useState('');
     const [date, setDate] = useState(new Date());
     const [number, setNumber] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToast();
 
     const handleSubmit = async(e) => {
       e.preventDefault();
+      setIsSubmitting(true);
       const user = auth.currentUser;
 
       if (user) {
@@ -79,7 +80,11 @@ export const AddSportPost = () => {
           setNumber(0);
         } catch (error) {
           console.error("Error writing document: ", error);
+        } finally {
+          setIsSubmitting(false);
         }
+      } else {
+        setIsSubmitting(false);
       }
        
     }
@@ -89,7 +94,8 @@ export const AddSportPost = () => {
     <Flex 
     height="100vh" 
     alignItems="center" 
-    justifyContent="center" 
+    justifyContent="center"
+    bg={"#FFEFDA"}
     >
      <Container width={400}
      backdropBlur={'true'}
@@ -102,7 +108,8 @@ export const AddSportPost = () => {
      color='white' 
      border ='2px solid'
      borderRadius={'20px'}
-     p={0}>
+     p={0}
+     boxShadow={'lg'}>
       
        <Box
          bg="#F4A460"
@@ -214,7 +221,8 @@ export const AddSportPost = () => {
         padding={'0.8rem'} borderRadius={'20px'} w={'200px'} 
         alignItems={'center'}
         mb={3}
-        >Find Your Buddies!</Button>
+        isDisabled={isSubmitting}
+        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}</Button>
         </Box>
         
       </form>

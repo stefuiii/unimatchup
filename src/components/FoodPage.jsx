@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
-import { addDoc, collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion} from "firebase/firestore";
+import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion, addDoc } from "firebase/firestore";
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
          HStack, InputGroup, InputLeftElement,
          ChakraProvider, Input,
-         Flex, useToast, useDisclosure } from "@chakra-ui/react";
+         Flex, useToast, useDisclosure, Spinner } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
@@ -25,7 +25,55 @@ const ShowPosts = ({post}) => {
     onClose: onModalClose
   } = useDisclosure();
 
-  const handleAddedMember = async () => {
+  const createChatRoom = async (postId, members) => {
+    try {
+        const eventRef = doc(database, 'foodPost', postId);
+        const eventDoc = await getDoc(eventRef);
+        const eventData = eventDoc.data();
+        const eventTitle = eventData.Title; 
+  
+        const unreadMessages = members.reduce((acc, member) => {
+          acc[member] = 0;
+          return acc;
+        }, {});
+  
+        const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
+            postId: postId,
+            collection: 'foodPost',
+            members: [...members, user.uid],
+            name: eventTitle, 
+            lastMessage: '',
+            lastMessageSender: '',
+            lastMessageTime: new Date(),
+            unreadMessages
+        });
+  
+        const chatRoomId = chatRoomRef.id;
+        const messagesCollectionRef = collection(chatRoomRef, 'messages');
+        await addDoc(messagesCollectionRef, {}); 
+  
+        await updateDoc(eventRef, {
+            chatRoomId: chatRoomId
+        });
+  
+        await updateDoc(chatRoomRef, {
+            chatRoomId: chatRoomId
+        });
+      
+        for (const member of [...members, user.uid]) {
+            const userProfileRef = doc(database, 'userProfile', member);
+            await updateDoc(userProfileRef, {
+                chatRooms: arrayUnion(chatRoomId)
+            });
+        }
+  
+        console.log('Chat room created successfully with ID:', chatRoomId);
+    } catch (error) {
+        console.error('Error creating chat room:', error);
+    }
+  };
+
+  const handleAddedMember = async() => {
     try {
         const docRef = doc(database, 'foodPost', post.docID);
         const docCollect = await getDoc(docRef);
@@ -68,13 +116,19 @@ const ShowPosts = ({post}) => {
                 Members: arrayUnion(userProfileRef)
             });
 
-            toast({
-                title: "Join Successful.",
-                description: "You have successfully joined this event! ",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-            });
+        toast({
+          title: "Join Successful.",
+          description: "You have succesfully joined this event! ",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        if (newlyAdded === post.Number) {
+          console.log('Creating chat room...');
+          await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
+        }
+
 
             console.log("Newly added members:", newlyAdded);
 
@@ -96,55 +150,9 @@ const ShowPosts = ({post}) => {
     } catch (error) {
         console.error('Fail to join', error);
     }
-}
 
-const createChatRoom = async (postId, members) => {
-  try {
-      const eventRef = doc(database, 'foodPost', postId);
-      const eventDoc = await getDoc(eventRef);
-      const eventData = eventDoc.data();
-      const eventTitle = eventData.Title; 
-
-      const unreadMessages = members.reduce((acc, member) => {
-        acc[member] = 0;
-        return acc;
-      }, {});
-
-      const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
-          postId: postId,
-          collection: 'foodPost',
-          members: [...members, user.uid],
-          name: eventTitle, 
-          lastMessage: '',
-          lastMessageSender: '',
-          lastMessageTime: new Date(),
-          unreadMessages
-      });
-
-      const chatRoomId = chatRoomRef.id;
-      const messagesCollectionRef = collection(chatRoomRef, 'messages');
-      await addDoc(messagesCollectionRef, {}); 
-
-      await updateDoc(eventRef, {
-          chatRoomId: chatRoomId
-      });
-
-      await updateDoc(chatRoomRef, {
-          chatRoomId: chatRoomId
-      });
-    
-      for (const member of [...members, user.uid]) {
-          const userProfileRef = doc(database, 'userProfile', member);
-          await updateDoc(userProfileRef, {
-              chatRooms: arrayUnion(chatRoomId)
-          });
-      }
-
-      console.log('Chat room created successfully with ID:', chatRoomId);
-  } catch (error) {
-      console.error('Error creating chat room:', error);
+   
   }
-};
     return (
     <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>
       <CardBody>
@@ -189,6 +197,7 @@ export const ShowFood = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -197,6 +206,7 @@ export const ShowFood = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -258,6 +268,10 @@ export const ShowFood = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -277,6 +291,8 @@ export const ShowFood = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>

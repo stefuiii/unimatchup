@@ -1,0 +1,6 @@
+.chat-container {
+    max-height: 80vh; 
+    overflow-y: auto;
+    padding-right: 10px; 
+  }
+  

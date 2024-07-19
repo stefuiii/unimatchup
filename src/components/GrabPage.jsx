@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
-import { addDoc, collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion} from "firebase/firestore";
+import { collection, doc, updateDoc, getDoc, getDocs, orderBy, query, arrayUnion, addDoc} from "firebase/firestore";
 import { Box, Heading, Button, 
          Stack, Text, ButtonGroup,
          HStack, 
@@ -10,7 +10,7 @@ import { Box, Heading, Button,
          ChakraProvider,
          Input, Flex } from "@chakra-ui/react";
 import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useToast, useDisclosure } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, useToast, useDisclosure, Spinner } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import grabHeading from "../icons/打车场景.svg"
 import EventDetailsModal from "./EventDetailsModal.jsx";
@@ -28,48 +28,52 @@ const ShowPosts = ({post}) => {
       onClose: onModalClose
     } = useDisclosure();
 
-    const handleAddedMember = async () => {
+    
+
+    const handleAddedMember = async() => {
       try {
           const docRef = doc(database, 'postInfo', post.docID);
           const docCollect = await getDoc(docRef);
           const docData = docCollect.data();
 
-          const memberDocs = await Promise.all(docData.Members.map(memberRef => getDoc(memberRef)));
-          const isUserAlreadyJoined = memberDocs.some(memberDoc => {
-              console.log("Checking member ID:", memberDoc.data().uid, "against user ID:", user.uid); 
-              return memberDoc.data().uid === user.uid;
+        const memberDocs = await Promise.all(docData.Members.map(memberRef => getDoc(memberRef)));
+        const isUserAlreadyJoined = memberDocs.some(memberDoc => {
+        console.log("Checking member ID:", memberDoc.data().uid, "against user ID:", user.uid); // Debugging log
+        return memberDoc.data().uid === user.uid;
+        });
+
+        if (isUserAlreadyJoined) {
+          toast({
+            title: "Join Failed",
+            description: "You have already joined this event",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        if (user.uid === docData.uid){
+          toast({
+            title: "Join Failed",
+            description: "You cannot join your event ",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
           });
 
-          if (isUserAlreadyJoined) {
-              toast({
-                  title: "Join Failed",
-                  description: "You have already joined this event",
-                  status: "error",
-                  duration: 5000,
-                  isClosable: true,
-              });
-              return;
-          }
+        } else if(docData.Joined < post.Number) {
+          const newlyAdded = docData.Joined + 1;
+          setAdded(newlyAdded);
+          await updateDoc(docRef, {Joined: newlyAdded});
+          const userProfileRef = doc(database, 'userProfile', user.uid);
+          await updateDoc(userProfileRef, {
+            events: arrayUnion(docRef)
+          });
+          await updateDoc(docRef, {
+            Members: arrayUnion(userProfileRef)
+          });
 
-          if (user.uid === docData.uid) {
-              toast({
-                  title: "Join Failed",
-                  description: "You cannot join your event ",
-                  status: "error",
-                  duration: 5000,
-                  isClosable: true,
-              });
-          } else if (docData.Joined < post.Number) {
-              const newlyAdded = docData.Joined + 1;
-              setAdded(newlyAdded);
-              await updateDoc(docRef, { Joined: newlyAdded });
-              const userProfileRef = doc(database, 'userProfile', user.uid);
-              await updateDoc(userProfileRef, {
-                  events: arrayUnion(docRef)
-              });
-              await updateDoc(docRef, {
-                  Members: arrayUnion(userProfileRef)
-              });
 
               toast({
                   title: "Join Successful.",
@@ -79,76 +83,73 @@ const ShowPosts = ({post}) => {
                   isClosable: true,
               });
 
-              console.log("Newly added members:", newlyAdded);
+          if (newlyAdded === post.Number) {
+            console.log('Creating chat room...');
+            await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
+        }
 
-              if (newlyAdded === post.Number) {
-                  console.log('Creating chat room...');
-                  await createChatRoom(post.docID, [...docData.Members.map(memberRef => memberRef.id),]);
-              }
-
-          } else {
-              console.log('The event is already full');
-              toast({
-                  title: "Join Failed",
-                  description: "The event is already full",
-                  status: "error",
-                  duration: 5000,
-                  isClosable: true,
-              });
-          }
+        } else {
+            console.log('The event is already full');
+            toast({
+              title: "Join Failed",
+              description: "The event is already full",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+        }
       } catch (error) {
           console.error('Fail to join', error);
       }
-  }
-
-  const createChatRoom = async (postId, members) => {
-    try {
-        const eventRef = doc(database, 'postInfo', postId);
-        const eventDoc = await getDoc(eventRef);
-        const eventData = eventDoc.data();
-        const eventTitle = eventData.Title; 
-
-        const unreadMessages = members.reduce((acc, member) => {
-          acc[member] = 0;
-          return acc;
-        }, {});
-
-        const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
-            postId: postId,
-            collection: 'postInfo',
-            members: [...members, user.uid],
-            name: eventTitle, 
-            lastMessage: '',
-            lastMessageSender: '',
-            lastMessageTime: new Date(),
-            unreadMessages
-        });
-
-        const chatRoomId = chatRoomRef.id;
-        const messagesCollectionRef = collection(chatRoomRef, 'messages');
-        await addDoc(messagesCollectionRef, {}); 
-
-        await updateDoc(eventRef, {
-            chatRoomId: chatRoomId
-        });
-
-        await updateDoc(chatRoomRef, {
-            chatRoomId: chatRoomId
-        });
-      
-        for (const member of [...members, user.uid]) {
-            const userProfileRef = doc(database, 'userProfile', member);
-            await updateDoc(userProfileRef, {
-                chatRooms: arrayUnion(chatRoomId)
-            });
-        }
-
-        console.log('Chat room created successfully with ID:', chatRoomId);
-    } catch (error) {
-        console.error('Error creating chat room:', error);
     }
-};
+
+    const createChatRoom = async (postId, members) => {
+      try {
+          const eventRef = doc(database, 'postInfo', postId);
+          const eventDoc = await getDoc(eventRef);
+          const eventData = eventDoc.data();
+          const eventTitle = eventData.Title; 
   
+          const unreadMessages = members.reduce((acc, member) => {
+            acc[member] = 0;
+            return acc;
+          }, {});
+  
+          const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
+              postId: postId,
+              collection: 'postInfo',
+              members: [...members, user.uid],
+              name: eventTitle, 
+              lastMessage: '',
+              lastMessageSender: '',
+              lastMessageTime: new Date(),
+              unreadMessages
+          });
+  
+          const chatRoomId = chatRoomRef.id;
+          const messagesCollectionRef = collection(chatRoomRef, 'messages');
+          await addDoc(messagesCollectionRef, {}); 
+  
+          await updateDoc(eventRef, {
+              chatRoomId: chatRoomId
+          });
+  
+          await updateDoc(chatRoomRef, {
+              chatRoomId: chatRoomId
+          });
+        
+          for (const member of [...members, user.uid]) {
+              const userProfileRef = doc(database, 'userProfile', member);
+              await updateDoc(userProfileRef, {
+                  chatRooms: arrayUnion(chatRoomId)
+              });
+          }
+  
+          console.log('Chat room created successfully with ID:', chatRoomId);
+      } catch (error) {
+          console.error('Error creating chat room:', error);
+      }
+  };
       
     return (
     <Card maxW='sm' width="300px" height="280px" justifyContent={'center'}>
@@ -195,6 +196,7 @@ export const ShowGrab = () => {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
     const postsPerPage = 4;
 
     
@@ -205,6 +207,7 @@ export const ShowGrab = () => {
             const querySnapshot = await getDocs(postsCollection);
             const postsData = querySnapshot.docs.map(doc => doc.data());
             setPosts(postsData);
+            setLoading(false);
         };
         fetchPosts();
     }, []);
@@ -264,6 +267,10 @@ export const ShowGrab = () => {
               placeholder='Search for Your Buddies' />
             </InputGroup>
             </HStack>
+            {loading ? (
+            <Spinner size="xl" />
+          ) : (
+            <>
           <HStack marginTop={5} spacing={4} overflowX="auto">
             {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} />
@@ -283,6 +290,8 @@ export const ShowGrab = () => {
           </Button>
         </ButtonGroup>
           </Box>
+          </>
+          )}
           </Box>
           </Flex>
         </ChakraProvider>
