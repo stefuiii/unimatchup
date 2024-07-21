@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { auth, database } from "../firebase-config.js";
 import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
 import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid, Spinner } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
+import { CalendarIcon, InfoIcon, InfoOutlineIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
 import "../format/oneLineDescription.css";
 import EventDetailsModal from "./EventDetailsModal.jsx";
@@ -173,9 +173,12 @@ export const ShowAll = () => {
           alignItems: 'center',
           flexDirection: 'column'
         }}>
-          <Text fontSize='xs'>
-            As the event creator, deleting the event will remove it and its chatroom for all its current participants.
-          </Text>
+          <HStack>
+            <InfoOutlineIcon color='gray' size='xs' />
+            <Text fontSize='xs'>
+              As the event creator, deleting the event will remove it and its chatroom for all its current participants.
+            </Text>
+          </HStack>
         <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} onDelete={removePost} />
