@@ -31,6 +31,16 @@ export const AddSportPost = () => {
 
     const handleSubmit = async(e) => {
       e.preventDefault();
+      if (number <= 0) {
+        toast({
+          title: "Invalid Number",
+          description: "The number must be greater than 0.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
       setIsSubmitting(true);
       const user = auth.currentUser;
 

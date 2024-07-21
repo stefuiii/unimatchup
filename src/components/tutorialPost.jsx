@@ -28,10 +28,19 @@ export const AddTutPost = () => {
   const [number, setNumber] = useState(0);
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    if (number <= 0) {
+      toast({
+        title: "Invalid Number",
+        description: "The number must be greater than 0.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
     setIsSubmitting(true); 
     const user = auth.currentUser;
 

@@ -1,0 +1,62 @@
+[debug] [2024-07-21T08:53:57.000Z] ----------------------------------------------------------------------
+[debug] [2024-07-21T08:53:57.001Z] Command:       /usr/local/bin/node /usr/local/bin/firebase init
+[debug] [2024-07-21T08:53:57.001Z] CLI Version:   13.13.3
+[debug] [2024-07-21T08:53:57.002Z] Platform:      darwin
+[debug] [2024-07-21T08:53:57.002Z] Node Version:  v20.13.1
+[debug] [2024-07-21T08:53:57.002Z] Time:          Sun Jul 21 2024 16:53:57 GMT+0800 (China Standard Time)
+[debug] [2024-07-21T08:53:57.002Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-21T08:53:57.003Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2024-07-21T08:53:57.046Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-21T08:53:57.046Z] > authorizing via signed-in user (stephaniejiang15@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/stephanie/umu
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-07-21T08:54:08.169Z] Using project from CLI flag: unimatchup-backup
+[debug] [2024-07-21T08:54:08.170Z] > refreshing access token with scopes: []
+[debug] [2024-07-21T08:54:08.171Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-07-21T08:54:08.171Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-07-21T08:55:39.679Z] ----------------------------------------------------------------------
+[debug] [2024-07-21T08:55:39.680Z] Command:       /usr/local/bin/node /usr/local/bin/firebase deploy --only hosting
+[debug] [2024-07-21T08:55:39.680Z] CLI Version:   13.13.3
+[debug] [2024-07-21T08:55:39.681Z] Platform:      darwin
+[debug] [2024-07-21T08:55:39.681Z] Node Version:  v20.13.1
+[debug] [2024-07-21T08:55:39.681Z] Time:          Sun Jul 21 2024 16:55:39 GMT+0800 (China Standard Time)
+[debug] [2024-07-21T08:55:39.681Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-21T08:55:39.682Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2024-07-21T08:55:39.727Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-21T08:55:39.727Z] > authorizing via signed-in user (stephaniejiang15@gmail.com)
+[debug] [2024-07-21T08:55:39.727Z] [iam] checking project unimatchup-backup for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-07-21T08:55:39.727Z] > refreshing access token with scopes: []
+[debug] [2024-07-21T08:55:39.728Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-07-21T08:55:39.728Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-07-21T08:56:54.748Z] *** [apiv2] error from fetch(https://www.googleapis.com/oauth2/v3/token, {"headers":{},"method":"POST","agent":{"_events":{},"_eventsCount":2,"options":{"noDelay":true,"path":null},"requests":{},"sockets":{"www.googleapis.com:443:::::::::::::::::::::":[]},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"cache":{"max":20,"maxSize":0,"maxEntrySize":0,"fetchMethod":null,"keyMap":{},"keyList":["https:+http://p.truesightai.com:1087",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"valList":[{"_events":{},"_eventsCount":2,"options":{},"requests":{},"sockets":{"www.googleapis.com:443:::::::::::::::::::::":[]},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"proxy":"http://p.truesightai.com:1087/","proxyHeaders":{},"connectOpts":{"ALPNProtocols":["http/1.1"],"host":"p.truesightai.com","port":1087}},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"next":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"prev":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"head":0,"tail":0,"free":{"heap":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"length":0},"initialFill":1,"size":1,"disposeAfter":null,"disposed":null,"noDisposeOnSet":false,"noUpdateTTL":false,"noDeleteOnFetchRejection":false,"allowStaleOnFetchRejection":false,"allowStaleOnFetchAbort":false,"ignoreFetchAbort":false,"allowStale":false,"noDeleteOnStaleGet":false,"updateAgeOnGet":false,"updateAgeOnHas":false,"ttlResolution":1,"ttlAutopurge":false,"ttl":0},"httpAgent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"httpsAgent":{"_events":{},"_eventsCount":2,"defaultPort":443,"protocol":"https:","options":{"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"maxCachedSessions":100,"_sessionCache":{"map":{},"list":[]}}},"body":{"_overheadLength":545,"_valueLength":212,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":true,"_streams":[],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------012889679076013437480598","_events":{},"_eventsCount":1}}): FetchError: request to https://www.googleapis.com/oauth2/v3/token failed, reason: connect ETIMEDOUT 172.30.6.231:1087
+[debug] [2024-07-21T08:56:54.749Z] [iam] error while checking permissions, command may fail: FirebaseError: Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2024-07-21T08:56:54.751Z] > refreshing access token with scopes: []
+[debug] [2024-07-21T08:56:54.752Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-07-21T08:56:54.753Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-07-21T08:56:54.755Z] *** [apiv2] error from fetch(https://firebase-public.firebaseio.com/cli.json, {"headers":{},"method":"GET","agent":{"_events":{},"_eventsCount":2,"options":{"noDelay":true,"path":null},"requests":{},"sockets":{"firebase-public.firebaseio.com:443:::::::::::::::::::::":[]},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"cache":{"max":20,"maxSize":0,"maxEntrySize":0,"fetchMethod":null,"keyMap":{},"keyList":["https:+http://p.truesightai.com:1087",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"valList":[{"_events":{},"_eventsCount":2,"options":{},"requests":{},"sockets":{"firebase-public.firebaseio.com:443:::::::::::::::::::::":[]},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"proxy":"http://p.truesightai.com:1087/","proxyHeaders":{},"connectOpts":{"ALPNProtocols":["http/1.1"],"host":"p.truesightai.com","port":1087}},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"next":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"prev":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"head":0,"tail":0,"free":{"heap":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0},"length":0},"initialFill":1,"size":1,"disposeAfter":null,"disposed":null,"noDisposeOnSet":false,"noUpdateTTL":false,"noDeleteOnFetchRejection":false,"allowStaleOnFetchRejection":false,"allowStaleOnFetchAbort":false,"ignoreFetchAbort":false,"allowStale":false,"noDeleteOnStaleGet":false,"updateAgeOnGet":false,"updateAgeOnHas":false,"ttlResolution":1,"ttlAutopurge":false,"ttl":0},"httpAgent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"httpsAgent":{"_events":{},"_eventsCount":2,"defaultPort":443,"protocol":"https:","options":{"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0,"maxCachedSessions":100,"_sessionCache":{"map":{},"list":[]}}}}): FetchError: request to https://firebase-public.firebaseio.com/cli.json failed, reason: connect ETIMEDOUT 172.30.6.231:1087
+[warn] ⚠  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2024-07-21T08:56:54.757Z] Failed to fetch MOTD FirebaseError: Failed to make request to https://firebase-public.firebaseio.com/cli.json

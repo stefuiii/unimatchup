@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Box, ChakraProvider, Flex, Heading, VStack, Text, Avatar,
          Input, InputGroup, InputLeftElement, Button, Drawer, DrawerBody,
@@ -80,11 +81,15 @@ export const Chatsoverview = () => {
     navigate(`/chatpage/${chatId}`);
   };
 
-  const handleFilterEvents = (collectionName) => {
-    const filteredChats = chats.filter(chat => chat.collection === collectionName);
-    setFilteredChats(filteredChats);
-    onClose(); 
+  const handleFilterEvents = (eventType) => {
+    if (eventType === 'all') {
+      setFilteredChats(chats);
+    } else {
+      const filtered = chats.filter(chat => chat.collection === eventType);
+      setFilteredChats(filtered);
+    }
   };
+  
 
   return (
     <ChakraProvider>
@@ -122,6 +127,9 @@ export const Chatsoverview = () => {
               <DrawerCloseButton />
               <DrawerHeader>Filter by Events</DrawerHeader>
               <DrawerBody>
+                <Button onClick={() => handleFilterEvents('all')} mb={3} w="100%" variant="outline">
+                  All
+                </Button>
                 <Button onClick={() => handleFilterEvents('postInfo')} mb={3} w="100%" variant="outline">
                   Grab
                 </Button>
