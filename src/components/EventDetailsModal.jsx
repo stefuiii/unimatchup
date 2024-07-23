@@ -43,9 +43,10 @@ const EventDetailsModal = ({ isOpen, onClose, post }) => {
           return memberSnap.exists() ? { uid: memberRef.id, ...memberSnap.data() } : null;
         }));
 
-        // 过滤掉组织者自己
+        
         const filteredMembers = members.filter(member => member !== null && member.uid !== post.uid);
         setMemberData(filteredMembers);
+
       } catch (error) {
         console.error("Error fetching member data:", error);
       } finally {

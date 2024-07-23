@@ -90,7 +90,7 @@ export const AddFoodPost = () => {
           setTitle('');
           setDescription('');
           setLocation('');
-          setDate('');
+          setDate(new Date());
           setNumber(0);
         } catch (error) {
           console.error("Error writing document: ", error);
@@ -190,7 +190,7 @@ export const AddFoodPost = () => {
               onChange={(date) => setDate(date)}
               showTimeSelect
               dateFormat="Pp"
-              customInput={<Input bg="white" color="black"/>}
+              customInput={<Input aria-label="Date and Time" bg="white" color="black"/>}
             />
           </FormControl>
 
@@ -246,7 +246,7 @@ export const AddFoodPost = () => {
         alignItems={'center'}
         mb={3}
         isDisabled={isSubmitting}
-        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}!</Button>
+        >{isSubmitting ? 'Submitting...' : 'Find Your Buddies!'}</Button>
         </Box>
         
       </form>
