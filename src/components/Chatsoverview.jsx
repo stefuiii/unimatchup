@@ -62,7 +62,7 @@ export const Chatsoverview = () => {
     };
 
     fetchChats();
-  }, []);
+  }, []); 
 
   useEffect(() => {
     if (search === '') {
