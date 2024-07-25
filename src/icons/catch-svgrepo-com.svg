@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg version="1.1" id="Uploaded to svgrepo.com" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 width="800px" height="800px" viewBox="0 0 64 64" xml:space="preserve">
+<style type="text/css">
+	.fandom_een{fill:#FF786E;}
+	.fandom_twee{fill:#BE5652;}
+	.fandom_drie{fill:#BE9148;}
+	.fandom_vier{fill:#FFC865;}
+	.fandom_dertien{fill:#AA9991;}
+	.fandom_veertien{fill:#EFEAE0;}
+	.fandom_vijftien{fill:#3A3A3A;}
+	.fandom_twintig{fill:#FFFAFA;}
+	.st0{fill:#6BC4D2;}
+	.st1{fill:#508D9B;}
+	.st2{fill:#8579A3;}
+	.st3{fill:#00B3AA;}
+	.st4{fill:#018273;}
+	.st5{fill:#685683;}
+	.st6{fill:#666666;}
+	.st7{fill:#4D4D4D;}
+	.st8{fill:#CCCCCC;}
+	.st9{fill:#808080;}
+	.st10{fill:#644638;}
+	.st11{fill:#4B322A;}
+</style>
+<g>
+	<g>
+		<path class="fandom_vier" d="M32,7C18.193,7,7,18.193,7,32h50C57,18.193,45.807,7,32,7z"/>
+		<path class="fandom_drie" d="M32,57c13.807,0,25-11.193,25-25H7C7,45.807,18.193,57,32,57z"/>
+	</g>
+	<g>
+		<path class="fandom_een" d="M57.757,13.939C53.392,6.175,43.544,2.464,34.693,6.911c-3.385,6.737-2.034,14.052,2.193,19.072
+			C42.687,24.225,52.02,20.017,57.757,13.939z"/>
+		<path class="fandom_twee" d="M36.885,25.983c-4.189-4.975-5.604-12.282-2.193-19.072c-7.857,3.946-11.684,13.001-8.658,21.468
+			C28.893,28.037,32.712,27.288,36.885,25.983z"/>
+		<path class="fandom_veertien" d="M59.419,18.094c-5.513,5.289-12.587,8.756-19.112,11.008c4.903,3.405,11.554,4.328,17.777,1.201
+			C60.007,26.475,60.537,22.4,59.419,18.094z"/>
+		<path class="fandom_dertien" d="M40.307,29.102c-4.681,1.583-9.074,2.506-12.45,2.963c7.33,11.193,24.086,10.464,30.227-1.762
+			C52,33.36,45.34,32.597,40.307,29.102z"/>
+		<path class="fandom_vijftien" d="M59.419,18.094c-0.381-1.468-0.937-2.864-1.663-4.156c-1.805,1.857-3.893,3.556-6.167,5.088
+			c-1.168-1.462-2.936-2.297-4.803-2.07c-3.095,0.376-5.293,3.567-4.63,7.094c-5.371,2.245-11.024,3.717-16.122,4.328
+			c0.467,1.306,1.075,2.544,1.823,3.686c5.318-0.721,10.979-2.214,16.309-4.418c0.962,0.845,2.174,1.347,3.474,1.347
+			c3.008,0,5.365-2.65,5.352-5.901C55.342,21.592,57.513,19.924,59.419,18.094z"/>
+		
+			<ellipse transform="matrix(0.9927 -0.1207 0.1207 0.9927 -2.4228 5.9011)" class="fandom_twintig" cx="47.516" cy="22.957" rx="3.467" ry="4.044"/>
+	</g>
+</g>
+</svg>

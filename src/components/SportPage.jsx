@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 //import "./Registration.css";
 import { auth, database } from "../firebase-config.js";
+import { useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, orderBy, query,arrayUnion, updateDoc, addDoc } from "firebase/firestore";
 import { Box, Heading, Button, 
          Stack, Text, ButtonGroup,
@@ -9,8 +10,8 @@ import { Box, Heading, Button,
          InputLeftElement,
          ChakraProvider, useToast,
          Input, Flex } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
-import { Card, CardBody, CardFooter, useDisclosure, Spinner } from '@chakra-ui/react'
+import { CalendarIcon, InfoIcon, SearchIcon, ArrowBackIcon } from "@chakra-ui/icons";
+import { Card, CardBody, CardFooter, useDisclosure, Spinner, Tooltip } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
 import postAvatar from "../icons/avatar13.svg"
 import sportHeading from "../icons/体育锻炼.svg"
@@ -176,6 +177,7 @@ export const ShowSport = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -220,6 +222,11 @@ export const ShowSport = () => {
           alignItems="center"
           alignContent="center"
           p={10}>
+            <Box alignSelf="flex-start">
+              <Tooltip hasArrow label="Return Home" aria-label="Chat Tooltip" bg="white" color="black">
+                <ArrowBackIcon color="#E3C195" boxSize={10} onClick={() => navigate('/home')}/>
+              </Tooltip>
+            </Box>
           <Box 
             style={{ display: 'flex', 
             justifyContent: 'center', 

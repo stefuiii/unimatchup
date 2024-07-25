@@ -8,13 +8,13 @@ import { Box, Heading, Button,
          InputGroup,
          InputLeftElement,
          ChakraProvider,
-         Input, Flex, useToast, Spinner } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon, SearchIcon } from "@chakra-ui/icons";
+         Input, Flex, useToast, Spinner, Tooltip } from "@chakra-ui/react";
+import { CalendarIcon, InfoIcon, SearchIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure } from '@chakra-ui/react'
 import "../format/oneLineDescription.css"
-import postAvatar from "../icons/avatar13.svg"
 import groupHeading from "../icons/工作汇报.svg"
 import EventDetailsModal from "./EventDetailsModal.jsx";
+import { useNavigate } from "react-router-dom";
 
 const ShowPosts = ({post}) => {
   const [added, setAdded] = useState(post.Joined);
@@ -172,6 +172,7 @@ export const ShowGroup = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     const postsPerPage = 4;
 
     useEffect (() => {
@@ -216,6 +217,11 @@ export const ShowGroup = () => {
           alignItems="center"
           alignContent="center"
           p={10}>
+            <Box alignSelf="flex-start">
+              <Tooltip hasArrow label="Return Home" aria-label="Chat Tooltip" bg="white" color="black">
+                <ArrowBackIcon color="#E3C195" boxSize={10} onClick={() => navigate('/home')}/>
+              </Tooltip>
+            </Box>
           <Box 
             style={{ display: 'flex', 
             justifyContent: 'center', 
