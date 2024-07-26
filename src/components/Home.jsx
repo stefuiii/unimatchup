@@ -196,6 +196,7 @@ export const Home = () =>  {
     justifyContent="flex-start" 
     alignItems="center"
     alignContent="center"
+    overflow="auto"
     className="container"
     >
       <Box 
@@ -269,7 +270,7 @@ export const Home = () =>  {
       </Stack>
       </HStack>
       <Box>
-      <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center">
+      <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center" mt={-20}>
       {[
         { src: grabIcon, alt: "Grab Car", buttonText: "Grab Car", onClick: handleGrabClick },
         { src: foodIcon, alt: "Delivery Food", buttonText: "Delivery Food", onClick: handleFoodClick },
