@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Box, ChakraProvider, Flex, HStack, Stack, Tooltip } from '@chakra-ui/react'
+import { Box, ChakraProvider, Flex, HStack, Stack, Tooltip, Image } from '@chakra-ui/react'
 import { doc, getDoc} from "firebase/firestore";
 import {
   Drawer,
@@ -30,10 +30,10 @@ import { ChatIcon } from "@chakra-ui/icons";
 import { useNavigate } from 'react-router-dom';
 import headIcon from "../icons/工作.svg"
 import smalldeco from "../icons/页头箭头.svg"
-import grabIcon from "../icons/打车场景.svg"
-import foodIcon from "../icons/一起吃饭.svg"
-import sportIcon from "../icons/体育锻炼.svg"
-import groupIcon from "../icons/工作汇报.svg"
+import grabIcon from "../icons/car-svgrepo-com.svg"
+import foodIcon from "../icons/food-location-svgrepo-com.svg"
+import sportIcon from "../icons/catch-svgrepo-com.svg"
+import groupIcon from "../icons/group-talk-svgrepo-com (1).svg"
 import profile from "../icons/人员.svg"
 import logoutIcon from "../icons/退出.svg"
 import { auth, database } from "../firebase-config"
@@ -266,109 +266,27 @@ export const Home = () =>  {
       </Stack>
       </HStack>
       <Box mt={-20}>
-      <HStack spacing={20}>
-      <Card maxW='sm' width="200px" height="180px" justifyContent={'center'}>
-      <CardBody 
-      display="flex"
-      flexDirection="column"
-      justifyContent="center" 
-      alignItems="center"
-      alignContent="center">
-      <Stack mt='1' spacing='3'>
-        <img src={grabIcon} alt="Avatar" width="120" height="120"/>
-        <ButtonGroup 
-        display="flex"
-        flexDirection="column"
-        justifyContent="center" 
-        alignItems="center"
-        alignContent="center"
-        size='sm'mt={-5}>
-        <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'150px'}
-        onClick={handleGrabClick}>
-          Grab Car
-        </Button>
-      </ButtonGroup>
-      </Stack>
-      </CardBody>
-      </Card>
-      
-      <Card maxW='sm' width="200px" height="180px" justifyContent={'center'}>
-      <CardBody 
-      display="flex"
-      flexDirection="column"
-      justifyContent="center" 
-      alignItems="center"
-      alignContent="center">
-      <Stack mt='1' spacing='5'>
-        <img src={foodIcon} alt="Avatar" width="180" height="180"/>
-        <ButtonGroup 
-        display="flex"
-        flexDirection="column"
-        justifyContent="center" 
-        alignItems="center"
-        alignContent="center"
-        size='sm' mt={-5}>
-        <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'150px'}
-        onClick={handleFoodClick}>
-          Delivery Food
-        </Button>
-      </ButtonGroup>
-      </Stack>
-      </CardBody>
-      </Card>
-
-      <Card maxW='sm' width="200px" height="180px" justifyContent={'center'}>
-      <CardBody 
-      display="flex"
-      flexDirection="column"
-      justifyContent="center" 
-      alignItems="center"
-      alignContent="center">
-      <Stack mt='1' spacing='0'>
-        <img src={sportIcon} alt="Avatar" width="180" height="180"/>
-        <ButtonGroup 
-        display="flex"
-        flexDirection="column"
-        justifyContent="center" 
-        alignItems="center"
-        alignContent="center"
-        size='sm'
-        mt={-10}>
-        <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'150px'}
-        onClick={handleSportClick}>
-          Sports
-        </Button>
-      </ButtonGroup>
-      </Stack>
-      </CardBody>
-      </Card>
-
-      <Card maxW='sm' width="200px" height="180px" justifyContent={'center'}>
-      <CardBody 
-      display="flex"
-      flexDirection="column"
-      justifyContent="center" 
-      alignItems="center"
-      alignContent="center">
-      <Stack mt='0' spacing='0'>
-        <img src={groupIcon} alt="Avatar" width="180" height="200%"/>
-        <ButtonGroup 
-        display="flex"
-        flexDirection="column"
-        justifyContent="center" 
-        alignItems="center"
-        alignContent="center"
-        size='sm'mt={-10}>
-        <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'150px'}
-        onClick={handleGroupClick}>
-          Tut Group
-        </Button>
-      </ButtonGroup>
-      </Stack>
-      </CardBody>
-      </Card>
-
-      </HStack>  
+      <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center">
+      {[
+        { src: grabIcon, alt: "Grab Car", buttonText: "Grab Car", onClick: handleGrabClick },
+        { src: foodIcon, alt: "Delivery Food", buttonText: "Delivery Food", onClick: handleFoodClick },
+        { src: sportIcon, alt: "Sports", buttonText: "Sports", onClick: handleSportClick },
+        { src: groupIcon, alt: "Tut Group", buttonText: "Tut Group", onClick: handleGroupClick }
+      ].map((item, index) => (
+        <Card key={index} maxW="sm" width={["20%", "20%", "20%", "20%"]} height="200px" justifyContent="center">
+          <CardBody display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center">
+            <Stack mt='1' spacing='3' align="center">
+              <Image  height={"80%"} src={item.src} alt={item.alt} width="80%" objectFit="contain" />
+              <ButtonGroup display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center" size='sm' >
+                <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'120px'} onClick={item.onClick} >
+                  {item.buttonText}
+                </Button>
+              </ButtonGroup>
+            </Stack>
+          </CardBody>
+        </Card>
+      ))}
+    </HStack>
       </Box>
       </Box>
       <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
