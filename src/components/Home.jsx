@@ -38,6 +38,7 @@ import profile from "../icons/人员.svg"
 import logoutIcon from "../icons/退出.svg"
 import { auth, database } from "../firebase-config"
 import ProfileCard from "./ProfileCard";
+import "../App.css";
 
 export const Home = () =>  {
   const [size, setSize] = React.useState('')
@@ -192,24 +193,26 @@ export const Home = () =>  {
     height='100vh'
     display="flex"
     flexDirection="column"
-    justifyContent="center" 
+    justifyContent="flex-start" 
     alignItems="center"
     alignContent="center"
-    p={5}
+    className="container"
     >
       <Box 
       width="70%"
       height="70%"
       justifyContent={'center'}
       alignContent={'center'}
-      mt={-20}>
+      mt={10}
+      >
       <HStack spacing={35}
       position="relative"
-      top="-50px">
-      <img src={headIcon} alt="Avatar" width="500" height="500"/>
-      <Stack marginInline={0} spacing={5}>
+      top="-50px"
+      >
+      <img src={headIcon} alt="Avatar" width="560" height="550"/>
+      <Stack marginInline={0} spacing={5} mb={-10}>
       <img src={smalldeco} alt="Avatar" width="50" height="50"/>
-      <Heading lineHeight='tall' whiteSpace ='pre-line'>
+      <Heading lineHeight='tall' whiteSpace ='pre-line' fontSize="5xl">
         <Highlight
         query='Best-fit'
         styles={{ px: '2', py: '1', rounded: 'full', bg: '#FFBF6A'}}
@@ -259,13 +262,13 @@ export const Home = () =>  {
           </AbsoluteCenter>
       </Box>
       <Box mt={-5}>
-        <Text color={'gray.500'}  position='relative'>
+        <Text color={'gray.500'}  position='relative' fontSize="lg">
           Click entries below to search for your events
         </Text>
       </Box>
       </Stack>
       </HStack>
-      <Box mt={-20}>
+      <Box>
       <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center">
       {[
         { src: grabIcon, alt: "Grab Car", buttonText: "Grab Car", onClick: handleGrabClick },

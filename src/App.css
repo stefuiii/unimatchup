@@ -56,3 +56,9 @@ input {
   position: relative;
   z-index: 9999;
 }
+
+@media (max-width: 1000px) {
+  .container {
+    min-width: 1000px;
+  }
+}
