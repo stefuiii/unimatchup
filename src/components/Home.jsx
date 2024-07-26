@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Box, ChakraProvider, Flex, HStack, Stack, Tooltip, Image } from '@chakra-ui/react'
-import { doc, getDoc} from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query} from "firebase/firestore";
 import {
   Drawer,
   Button,
@@ -40,25 +40,15 @@ import { auth, database } from "../firebase-config"
 import ProfileCard from "./ProfileCard";
 import "../App.css";
 
-export const Home = () =>  {
-  const [size, setSize] = React.useState('')
-  const {
-    isOpen: isModalOpen,
-    onOpen: onModalOpen,
-    onClose: onModalClose
-  } = useDisclosure();
-
-  // 第二个 useDisclosure 钩子，用于管理第二个状态
-  const {
-    isOpen: isDrawerOpen,
-    onOpen: onDrawerOpen,
-    onClose: onDrawerClose
-  } = useDisclosure();
-
+export const Home = () => {
+  const [size, setSize] = React.useState('');
+  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
+  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
   const [nickName, setNickName] = useState('');
   const [userID, setUserID] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [shouldRenderProfileCard, setShouldRenderProfileCard] = useState(false);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
   const navigate = useNavigate();
 
@@ -85,8 +75,29 @@ export const Home = () =>  {
       setLoadingUser(false);
     };
 
+    const checkUnreadMessages = async () => {
+      if (userID) {
+        const chatRoomsRef = collection(database, 'chatRooms');
+        const chatRoomsQuery = query(chatRoomsRef);
+        
+        const chatRoomsSnapshot = await getDocs(chatRoomsQuery);
+        let hasUnread = false;
+
+        for (const doc of chatRoomsSnapshot.docs) {
+          const chatRoomData = doc.data();
+          if (chatRoomData.unreadMessages && chatRoomData.unreadMessages[userID] > 0) {
+            hasUnread = true;
+            break;
+          }
+        }
+
+        setHasUnreadMessages(hasUnread);
+      }
+    };
+
     fetchUserData();
-  }, []);
+    checkUnreadMessages();
+  }, [userID]);
 
   const handleModalOpen = () => {
     setShouldRenderProfileCard(true);
@@ -94,72 +105,69 @@ export const Home = () =>  {
   };
 
   if (loadingUser) {
-    return <Spinner alignContent={'center'}/>;
+    return <Spinner alignContent={'center'} />;
   }
-  
-
 
   const handleClick = (newSize) => {
-    setSize(newSize)
-    onDrawerOpen()
-  }
+    setSize(newSize);
+    onDrawerOpen();
+  };
 
   const handleGrabClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/showgrab');
   };
 
   const handleFoodClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/showfood');
   };
 
   const handleSportClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/showsport');
   };
 
   const handleGroupClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/showgroup');
   };
 
   const handleAddGrabClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/addpost');
   };
 
   const handleAddFoodClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/addfoodpost');
   };
 
   const handleAddSportClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/addsportpost');
   };
 
   const handleAddGroupClick = () => {
-    console.log('Button clicked!'); 
+    console.log('Button clicked!');
     navigate('/addtutpost');
   };
 
   const handleEditProfile = () => {
     navigate('/createprofile');
-  }
+  };
 
   const handleChatClick = () => {
     navigate('/chatsoverview');
-  }
+  };
 
   const handleLogout = () => {
     navigate('/landing');
-  }
-
+  };
 
   return (
     <ChakraProvider>
-      <HStack spacing={2} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
+      <HStack spacing={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
        <>
        <Tooltip hasArrow label="Log Out" aria-label="Log Out Tooltip" bg="white" color="black">
         <Button onClick={handleLogout} bg="none" mb={5} mr={-5}>
@@ -176,8 +184,27 @@ export const Home = () =>  {
         )}
        </>
        <Tooltip hasArrow label="Chat" aria-label="Chat Tooltip" bg="white" color="black">
-         <ChatIcon boxSize={6} mb={7} color={'white'} onClick={() => handleChatClick()}/>
-       </Tooltip>
+    <Button
+      position="relative"
+      onClick={handleChatClick}
+      bg="none"
+      p={0}
+      top="-20px"
+    >
+      <ChatIcon boxSize={6} color={'white'}/>
+      {hasUnreadMessages && (
+        <Box
+          position="absolute"
+          top={0}
+          right={0}
+          width="12px"
+          height="12px"
+          borderRadius="50%"
+          bg="red.500"
+        />
+      )}
+    </Button>
+  </Tooltip>
      <Button
       onClick={() => handleClick('sm')}
       key={'sm'}
@@ -185,146 +212,142 @@ export const Home = () =>  {
       bg={"white"}
     >
       {`Your Page`}
-    </Button>
-  </HStack>
-    <Flex
-    bg={"#FFEFDA"}
-    width='100vw'
-    height='100vh'
-    display="flex"
-    flexDirection="column"
-    justifyContent="flex-start" 
-    alignItems="center"
-    alignContent="center"
-    overflow="auto"
-    className="container"
-    >
-      <Box 
-      width="70%"
-      height="70%"
-      justifyContent={'center'}
-      alignContent={'center'}
-      mt={10}
-      >
-      <HStack spacing={35}
-      position="relative"
-      top="-50px"
-      >
-      <img src={headIcon} alt="Avatar" width="560" height="550"/>
-      <Stack marginInline={0} spacing={5} mb={-10}>
-      <img src={smalldeco} alt="Avatar" width="50" height="50"/>
-      <Heading lineHeight='tall' whiteSpace ='pre-line' fontSize="5xl">
-        <Highlight
-        query='Best-fit'
-        styles={{ px: '2', py: '1', rounded: 'full', bg: '#FFBF6A'}}
-        >
-        {`With us to find your\nBest-fit Buddies!`}
-        </Highlight>
-      </Heading>
-      <Popover>
-        <PopoverTrigger>
-          <Button bg={'white'} borderRadius={'10'}>Post Here</Button>
-          </PopoverTrigger>
-          <Portal>
-            <PopoverContent>
-              <PopoverArrow />
-              <PopoverCloseButton />
-              <PopoverBody>
-                <ButtonGroup size='sm'mt={-5} spacing={2}>
-                  <Button variant='solid' color='white' bg='#FFD296' 
-                  borderRadius={10}
-                  onClick={handleAddGrabClick}>
-                    Grab Car
-                  </Button>
-                  <Button variant='solid' color='white' bg='#FFD296' 
-                  borderRadius={10}
-                  onClick={handleAddFoodClick}>
-                    Food
-                  </Button>
-                  <Button variant='solid' color='white' bg='#FFD296' 
-                  borderRadius={10}
-                  onClick={handleAddSportClick}>
-                    Sport
-                  </Button>
-                  <Button variant='solid' color='white' bg='#FFD296' 
-                  borderRadius={10}
-                  onClick={handleAddGroupClick}>
-                    Group
-                  </Button>
-                </ButtonGroup>
-              </PopoverBody>
-            </PopoverContent>
-          </Portal>
-      </Popover>
-      <Box position='relative' padding='5'>
-        <Divider borderColor='gray' />
-        <AbsoluteCenter bg='#FFEFDA' px='5'>
-          Or
-          </AbsoluteCenter>
-      </Box>
-      <Box mt={-5}>
-        <Text color={'gray.500'}  position='relative' fontSize="lg">
-          Click entries below to search for your events
-        </Text>
-      </Box>
-      </Stack>
-      </HStack>
-      <Box>
-      <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center" mt={-20}>
-      {[
-        { src: grabIcon, alt: "Grab Car", buttonText: "Grab Car", onClick: handleGrabClick },
-        { src: foodIcon, alt: "Delivery Food", buttonText: "Delivery Food", onClick: handleFoodClick },
-        { src: sportIcon, alt: "Sports", buttonText: "Sports", onClick: handleSportClick },
-        { src: groupIcon, alt: "Tut Group", buttonText: "Tut Group", onClick: handleGroupClick }
-      ].map((item, index) => (
-        <Card key={index} maxW="sm" width={["20%", "20%", "20%", "20%"]} height="200px" justifyContent="center">
-          <CardBody display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center">
-            <Stack mt='1' spacing='3' align="center">
-              <Image  height={"80%"} src={item.src} alt={item.alt} width="80%" objectFit="contain" />
-              <ButtonGroup display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center" size='sm' >
-                <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'120px'} onClick={item.onClick} >
-                  {item.buttonText}
-                </Button>
-              </ButtonGroup>
-            </Stack>
-          </CardBody>
-        </Card>
-      ))}
+      </Button>
     </HStack>
-      </Box>
-      </Box>
-      <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <HStack spacing={0}>
-          <DrawerHeader mt={7} width="100"
-          whiteSpace="nowrap" textOverflow="ellipsis">
-            Hello {nickName}
-            </DrawerHeader>
-          <Button mt={7} onClick={handleEditProfile} colorScheme="teal" fontSize="sm" variant="link">
-          Edit your profile
-          </Button>
+      <Flex
+        bg={"#FFEFDA"}
+        width='100vw'
+        height='100vh'
+        display="flex"
+        flexDirection="column"
+        justifyContent="flex-start"
+        alignItems="center"
+        alignContent="center"
+        overflow="auto"
+        className="container"
+      >
+        <Box
+          width="70%"
+          height="70%"
+          justifyContent={'center'}
+          alignContent={'center'}
+          mt={10}
+        >
+          <HStack spacing={35} position="relative" top="-50px">
+            <img src={headIcon} alt="Avatar" width="560" height="550" />
+            <Stack marginInline={0} spacing={5} mb={-10}>
+              <img src={smalldeco} alt="Avatar" width="50" height="50" />
+              <Heading lineHeight='tall' whiteSpace='pre-line' fontSize="5xl">
+                <Highlight
+                  query='Best-fit'
+                  styles={{ px: '2', py: '1', rounded: 'full', bg: '#FFBF6A' }}
+                >
+                  {`With us to find your\nBest-fit Buddies!`}
+                </Highlight>
+              </Heading>
+              <Popover>
+                <PopoverTrigger>
+                  <Button bg={'white'} borderRadius={'10'}>Post Here</Button>
+                </PopoverTrigger>
+                <Portal>
+                  <PopoverContent>
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverBody>
+                      <ButtonGroup size='sm' mt={-5} spacing={2}>
+                        <Button variant='solid' color='white' bg='#FFD296'
+                          borderRadius={10}
+                          onClick={handleAddGrabClick}>
+                          Grab Car
+                        </Button>
+                        <Button variant='solid' color='white' bg='#FFD296'
+                          borderRadius={10}
+                          onClick={handleAddFoodClick}>
+                          Food
+                        </Button>
+                        <Button variant='solid' color='white' bg='#FFD296'
+                          borderRadius={10}
+                          onClick={handleAddSportClick}>
+                          Sport
+                        </Button>
+                        <Button variant='solid' color='white' bg='#FFD296'
+                          borderRadius={10}
+                          onClick={handleAddGroupClick}>
+                          Group
+                        </Button>
+                      </ButtonGroup>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Portal>
+              </Popover>
+              <Box position='relative' padding='5'>
+                <Divider borderColor='gray' />
+                <AbsoluteCenter bg='#FFEFDA' px='5'>
+                  Or
+                </AbsoluteCenter>
+              </Box>
+              <Box mt={-5}>
+                <Text color={'gray.500'} position='relative' fontSize="lg">
+                  Click entries below to search for your events
+                </Text>
+              </Box>
+            </Stack>
           </HStack>
-          <DrawerBody>
-          <Tabs variant='soft-rounded' colorScheme='green'>
-  <TabList>
-    <Tab>Created</Tab>
-    <Tab>Joined</Tab>
-  </TabList>
-  <TabPanels>
-    <TabPanel>
-      <p><ShowAll /></p>
-    </TabPanel>
-    <TabPanel>
-      <p><ShowAllJoint /></p>
-    </TabPanel>
-  </TabPanels>
-</Tabs>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </Flex>
+          <Box>
+            <HStack spacing={[3, 6, 9, 12]} wrap="wrap" justify="center" mt={-20}>
+              {[
+                { src: grabIcon, alt: "Grab Car", buttonText: "Grab Car", onClick: handleGrabClick },
+                { src: foodIcon, alt: "Delivery Food", buttonText: "Delivery Food", onClick: handleFoodClick },
+                { src: sportIcon, alt: "Sports", buttonText: "Sports", onClick: handleSportClick },
+                { src: groupIcon, alt: "Tut Group", buttonText: "Tut Group", onClick: handleGroupClick }
+              ].map((item, index) => (
+                <Card key={index} maxW="sm" width={["20%", "20%", "20%", "20%"]} height="200px" justifyContent="center">
+                  <CardBody display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center">
+                    <Stack mt='1' spacing='3' align="center">
+                      <Image height={"80%"} src={item.src} alt={item.alt} width="80%" objectFit="contain" />
+                      <ButtonGroup display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center" size='sm' >
+                        <Button variant='solid' color='white' bg='#FFD296' borderRadius={20} width={'120px'} onClick={item.onClick} >
+                          {item.buttonText}
+                        </Button>
+                      </ButtonGroup>
+                    </Stack>
+                  </CardBody>
+                </Card>
+              ))}
+            </HStack>
+          </Box>
+        </Box>
+        <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerCloseButton />
+            <HStack spacing={0}>
+              <DrawerHeader mt={7} width="100" whiteSpace="nowrap" textOverflow="ellipsis">
+                Hello {nickName}
+              </DrawerHeader>
+              <Button mt={7} onClick={handleEditProfile} colorScheme="teal" fontSize="sm" variant="link">
+                Edit your profile
+              </Button>
+            </HStack>
+            <DrawerBody>
+              <Tabs variant='soft-rounded' colorScheme='green'>
+                <TabList>
+                  <Tab>Created</Tab>
+                  <Tab>Joined</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <p><ShowAll /></p>
+                  </TabPanel>
+                  <TabPanel>
+                    <p><ShowAllJoint /></p>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      </Flex>
     </ChakraProvider>
-  )
-}
+  );
+};

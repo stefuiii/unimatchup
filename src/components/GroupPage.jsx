@@ -20,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 const ShowPosts = ({post}) => {
   const [added, setAdded] = useState(post.Joined);
   const user = auth.currentUser;
+  const [chatRoomExists, setChatRoomExists] = useState(false);
+  const [isFull, setIsFull] = useState(false);
   const date = post.Date.toDate().toLocaleString();
   const toast = useToast();
 
@@ -28,6 +30,29 @@ const ShowPosts = ({post}) => {
     onOpen: onModalOpen,
     onClose: onModalClose
   } = useDisclosure();
+
+  useEffect(() => {
+    const checkChatRoomAndCapacity = async () => {
+      try {
+        const eventRef = doc(database, 'groupPost', post.docID);
+        const eventDoc = await getDoc(eventRef);
+        const eventData = eventDoc.data();
+
+        if (eventData.chatRoomId) {
+          setChatRoomExists(true);
+        }
+
+        if (eventData.Joined >= post.Number) {
+          setIsFull(true);
+        }
+      } catch (error) {
+        console.error('Error checking chat room or capacity:', error);
+      }
+    };
+
+    checkChatRoomAndCapacity();
+  }, [post.docID, post.Number]);
+
 
   const createChatRoom = async (postId, members) => {
     try {
@@ -69,7 +94,16 @@ const ShowPosts = ({post}) => {
             await updateDoc(userProfileRef, {
                 chatRooms: arrayUnion(chatRoomId)
             });
-        }
+
+            
+              toast({
+                  title: "Chat Room Created",
+                  description: `The chatroom for "${eventTitle}" has been built up.`,
+                  status: "success",
+                  duration: null,
+                  isClosable: true,
+              });
+      }
   
         console.log('Chat room created successfully with ID:', chatRoomId);
     } catch (error) {
@@ -176,15 +210,25 @@ export const ShowGroup = () => {
     const navigate = useNavigate();
     const postsPerPage = 4;
 
-    useEffect (() => {
-        const fetchPosts = async () => {
-            const postsCollection = query(collection(database, "groupPost"), orderBy("Date", "asc"));
-            const querySnapshot = await getDocs(postsCollection);
-            const postsData = querySnapshot.docs.map(doc => doc.data());
-            setPosts(postsData);
-            setLoading(false);
-        };
-        fetchPosts();
+    useEffect(() => {
+      const fetchPosts = async () => {
+        const now = new Date(); 
+    
+        const postsCollection = query(collection(database, "groupPost"), orderBy("Date", "asc"));
+        const querySnapshot = await getDocs(postsCollection);
+    
+        const postsData = querySnapshot.docs
+          .map(doc => ({ ...doc.data(), docID: doc.id })) 
+          .filter(post => !post.chatRoomId) 
+          .filter(post => post.Date.toDate() > now);
+    
+        const sortedPosts = postsData.sort((a, b) => a.Date.toDate() - b.Date.toDate());
+    
+        setPosts(sortedPosts);
+        setLoading(false);
+      };
+    
+      fetchPosts();
     }, []);
 
     const indexOfLastPost = currentPage * postsPerPage;

@@ -6,7 +6,7 @@ import { Box, ChakraProvider, Flex, Heading, VStack, Text, Avatar,
         } from '@chakra-ui/react';
 import { SearchIcon, ArrowBackIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDocs } from 'firebase/firestore';
 import { auth, database } from '../firebase-config';
 import myAvatar from "../icons/avatar13.svg";
 import dayjs from 'dayjs';
@@ -21,48 +21,56 @@ export const Chatsoverview = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    const fetchChats = () => {
+    const fetchChats = async () => {
       const user = auth.currentUser;
       if (user) {
         const userProfileRef = doc(database, 'userProfile', user.uid);
-
-        const unsubscribeUserProfile = onSnapshot(userProfileRef, (userProfileSnap) => {
+    
+        const unsubscribeUserProfile = onSnapshot(userProfileRef, async (userProfileSnap) => {
           if (userProfileSnap.exists()) {
             const userProfileData = userProfileSnap.data();
             const chatRoomIds = userProfileData.chatRooms || [];
-
-            if (chatRoomIds.length > 0) {       
-              const chatsQuery = query(collection(database, 'chatRooms'), where('__name__', 'in', chatRoomIds));
-              const unsubscribeChatRooms = onSnapshot(chatsQuery, (querySnapshot) => {
-                const chatsData = querySnapshot.docs.map(doc => ({
+    
+            if (chatRoomIds.length > 0) {
+              const batchSize = 30;
+              const chunks = [];
+              for (let i = 0; i < chatRoomIds.length; i += batchSize) {
+                chunks.push(chatRoomIds.slice(i, i + batchSize));
+              }
+    
+              const chatRoomPromises = chunks.map(async (chunk) => {
+                const chatsQuery = query(collection(database, 'chatRooms'), where('__name__', 'in', chunk));
+                const querySnapshot = await getDocs(chatsQuery);
+                return querySnapshot.docs.map(doc => ({
                   id: doc.id,
                   ...doc.data(),
                 }));
-
-                const sortedChats = chatsData.sort((a, b) => {
-                  const timeA = a.lastMessageTime ? a.lastMessageTime.toDate() : new Date(0);
-                  const timeB = b.lastMessageTime ? b.lastMessageTime.toDate() : new Date(0);
-                  return timeB - timeA;
-                });
-
-                setChats(sortedChats);
-                setFilteredChats(sortedChats); 
               });
-
-              return () => unsubscribeChatRooms();
+    
+              const chatRoomResults = await Promise.all(chatRoomPromises);
+              const allChats = chatRoomResults.flat();
+    
+              const sortedChats = allChats.sort((a, b) => {
+                const timeA = a.lastMessageTime ? a.lastMessageTime.toDate() : new Date(0);
+                const timeB = b.lastMessageTime ? b.lastMessageTime.toDate() : new Date(0);
+                return timeB - timeA;
+              });
+    
+              setChats(sortedChats);
+              setFilteredChats(sortedChats);
             } else {
               setChats([]);
               setFilteredChats([]);
             }
           }
         });
-
+    
         return () => unsubscribeUserProfile();
       }
     };
-
+    
     fetchChats();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (search === '') {
@@ -80,12 +88,15 @@ export const Chatsoverview = () => {
     navigate(`/chatpage/${chatId}`);
   };
 
-  const handleFilterEvents = (collectionName) => {
-    const filteredChats = chats.filter(chat => chat.collection === collectionName);
-    setFilteredChats(filteredChats);
-    onClose(); 
+  const handleFilterEvents = (eventType) => {
+    if (eventType === 'all') {
+      setFilteredChats(chats);
+    } else {
+      const filtered = chats.filter(chat => chat.collection === eventType);
+      setFilteredChats(filtered);
+    }
   };
-
+  
   return (
     <ChakraProvider>
       <Box bg="#FFEFDA" minH="100vh" p={5}>
@@ -122,6 +133,9 @@ export const Chatsoverview = () => {
               <DrawerCloseButton />
               <DrawerHeader>Filter by Events</DrawerHeader>
               <DrawerBody>
+                <Button onClick={() => handleFilterEvents('all')} mb={3} w="100%" variant="outline">
+                  All
+                </Button>
                 <Button onClick={() => handleFilterEvents('postInfo')} mb={3} w="100%" variant="outline">
                   Grab
                 </Button>

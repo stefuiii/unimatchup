@@ -20,6 +20,8 @@ import EventDetailsModal from "./EventDetailsModal.jsx";
 
 const ShowPosts = ({post}) => {
     const [added, setAdded] = useState(post.Joined);
+    const [chatRoomExists, setChatRoomExists] = useState(false);
+    const [isFull, setIsFull] = useState(false);
     const user = auth.currentUser;
     const date = post.Date.toDate().toLocaleString();
     const toast = useToast();
@@ -30,7 +32,27 @@ const ShowPosts = ({post}) => {
       onClose: onModalClose
     } = useDisclosure();
 
-    
+    useEffect(() => {
+      const checkChatRoomAndCapacity = async () => {
+        try {
+          const eventRef = doc(database, 'postInfo', post.docID);
+          const eventDoc = await getDoc(eventRef);
+          const eventData = eventDoc.data();
+  
+          if (eventData.chatRoomId) {
+            setChatRoomExists(true);
+          }
+  
+          if (eventData.Joined >= post.Number) {
+            setIsFull(true);
+          }
+        } catch (error) {
+          console.error('Error checking chat room or capacity:', error);
+        }
+      };
+  
+      checkChatRoomAndCapacity();
+    }, [post.docID, post.Number]);
 
     const handleAddedMember = async() => {
       try {
@@ -40,7 +62,7 @@ const ShowPosts = ({post}) => {
 
         const memberDocs = await Promise.all(docData.Members.map(memberRef => getDoc(memberRef)));
         const isUserAlreadyJoined = memberDocs.some(memberDoc => {
-        console.log("Checking member ID:", memberDoc.data().uid, "against user ID:", user.uid); // Debugging log
+        console.log("Checking member ID:", memberDoc.data().uid, "against user ID:", user.uid); 
         return memberDoc.data().uid === user.uid;
         });
 
@@ -145,7 +167,15 @@ const ShowPosts = ({post}) => {
               await updateDoc(userProfileRef, {
                   chatRooms: arrayUnion(chatRoomId)
               });
-          }
+
+                toast({
+                    title: "Chat Room Created",
+                    description: `The chatroom for "${eventTitle}" has been built up.`,
+                    status: "success",
+                    duration: null,
+                    isClosable: true,
+                });
+        }
   
           console.log('Chat room created successfully with ID:', chatRoomId);
       } catch (error) {
@@ -176,9 +206,8 @@ const ShowPosts = ({post}) => {
       <CardFooter style={{ marginTop: '-20px' }}
         justifyContent={'left'} mt={'0'}>
         <ButtonGroup spacing='4' justifyContent={'flex-start'}>
-          <Button onClick={handleAddedMember}
-            variant='solid' colorScheme='blue' fontSize="xs">
-            Join Us({added}/{post.Number})
+        <Button onClick={handleAddedMember} variant='solid' colorScheme='blue' fontSize="xs">
+            Join Us ({added}/{post.Number})
           </Button>
           <>
           <Button onClick={onModalOpen} variant='ghost' colorScheme='blue' fontSize="xs">
@@ -202,17 +231,25 @@ export const ShowGrab = () => {
     const navigate = useNavigate();
     const postsPerPage = 4;
 
+    useEffect(() => {
+      const fetchPosts = async () => {
+        const now = new Date(); 
     
-
-    useEffect (() => {
-        const fetchPosts = async () => {
-            const postsCollection = query(collection(database, "postInfo"), orderBy("Date", "asc"));
-            const querySnapshot = await getDocs(postsCollection);
-            const postsData = querySnapshot.docs.map(doc => doc.data());
-            setPosts(postsData);
-            setLoading(false);
-        };
-        fetchPosts();
+        const postsCollection = query(collection(database, "postInfo"), orderBy("Date", "asc"));
+        const querySnapshot = await getDocs(postsCollection);
+    
+        const postsData = querySnapshot.docs
+          .map(doc => ({ ...doc.data(), docID: doc.id })) 
+          .filter(post => !post.chatRoomId) 
+          .filter(post => post.Date.toDate() > now);
+    
+        const sortedPosts = postsData.sort((a, b) => a.Date.toDate() - b.Date.toDate());
+    
+        setPosts(sortedPosts);
+        setLoading(false);
+      };
+    
+      fetchPosts();
     }, []);
 
     const indexOfLastPost = currentPage * postsPerPage;

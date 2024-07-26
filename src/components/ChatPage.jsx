@@ -11,13 +11,14 @@ import {
   InputGroup,
   InputRightElement,
   Button,
-  Heading
+  Heading,
+  useToast,
 } from '@chakra-ui/react';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import dayjs from 'dayjs';
 import { collection, query, orderBy, onSnapshot, addDoc, Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, database } from '../firebase-config';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export const ChatPage = () => {
   const { chatRoomId } = useParams();
@@ -26,8 +27,11 @@ export const ChatPage = () => {
   const [eventDetails, setEventDetails] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
+  const [eventOwner, setEventOwner] = useState(null);
   const messagesEndRef = useRef(null);
   const user = auth.currentUser;
+  const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('ChatRoomId:', chatRoomId); 
@@ -75,10 +79,38 @@ export const ChatPage = () => {
             const eventRef = doc(database, eventCollection, postId);
             const eventDoc = await getDoc(eventRef);
             if (eventDoc.exists()) {
-              setEventDetails(eventDoc.data());
+              const eventData = eventDoc.data();
+              setEventDetails(eventData);
+              
+              if (eventData.uid) {
+                const ownerProfileRef = doc(database, 'userProfile', eventData.uid);
+                const ownerProfileDoc = await getDoc(ownerProfileRef);
+                if (ownerProfileDoc.exists()) {
+                  setEventOwner(ownerProfileDoc.data());
+                } else {
+                  console.error('Owner profile not found');
+                }
+              }
             } else {
               console.error('Event not found');
             }
+
+            const unsubscribeEvent = onSnapshot(eventRef, (doc) => {
+              if (doc.exists()) {
+              const eventData = doc.data();
+              if (eventData.status === 'deleted') {
+              toast({
+              title: 'Event Terminated',
+              description: 'This event has been terminated by the owner.',
+              status: 'warning',
+              duration: null,
+              isClosable: true,
+              onCloseComplete: () => navigate('/chatsoverview'),
+                   });
+                 }
+                }
+             });
+
           } catch (error) {
             console.error('Error fetching event details:', error);
           }
@@ -107,7 +139,7 @@ export const ChatPage = () => {
 
   useEffect(() => {
     const markMessagesAsRead = async () => {
-      if (chatRoomId) {
+      if (chatRoomId && user) {
         const chatRoomRef = doc(database, 'chatRooms', chatRoomId);
         await updateDoc(chatRoomRef, {
           [`unreadMessages.${user.uid}`]: 0
@@ -117,6 +149,7 @@ export const ChatPage = () => {
   
     markMessagesAsRead();
   }, [chatRoomId, user]);
+  
   
 
   const handleSendMessage = async () => {
@@ -179,17 +212,22 @@ export const ChatPage = () => {
           {eventDetails ? (
             <>
               <Text>
-               <Text as="span" fontWeight="bold">Event: </Text> {eventDetails.Title}
+                <Text as="span" fontWeight="bold">Event: </Text> {eventDetails.Title}
               </Text>
               <Text>
-               <Text as="span" fontWeight="bold">Time: </Text> {dayjs(eventDetails.Date.toDate()).format('HH:mm DD MMM')}
+                <Text as="span" fontWeight="bold">Time: </Text> {dayjs(eventDetails.Date.toDate()).format('HH:mm DD MMM')}
               </Text>
               <Text>
-               <Text as="span" fontWeight="bold">Location: </Text> {eventDetails.Location}
+                <Text as="span" fontWeight="bold">Location: </Text> {eventDetails.Location}
               </Text>
               <Text>
-               <Text as="span" fontWeight="bold">Description: </Text> {eventDetails.Description}
+                <Text as="span" fontWeight="bold">Description: </Text> {eventDetails.Description}
               </Text>
+              {eventOwner && (
+                <Text>
+                  <Text as="span" fontWeight="bold">Owner: </Text> {eventOwner.nickName}
+                </Text>
+              )}
             </>
           ) : (
             <Text>Loading...</Text>
@@ -245,7 +283,7 @@ export const ChatPage = () => {
                 <Avatar src={participant.avatar} name={participant.name} />
                 <Text>
                   {participant.nickName}
-                  {participant.uid === user.uid && ( // Replace 'currentUserUID' with the actual current user ID
+                  {participant.uid === user.uid && ( 
                     <Text as="span" fontSize="sm" color="gray.500" ml={2}>
                       YOU
                     </Text>
