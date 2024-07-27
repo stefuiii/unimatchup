@@ -1,34 +1,60 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { Box, 
-         Heading, 
-         FormControl, 
-         FormLabel, 
-         Input, 
-         Button, Flex } from "@chakra-ui/react";
-
+import { getAuth, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { Box, Heading, FormControl, FormLabel, Input, Button, Flex, useToast } from "@chakra-ui/react";
 
 export const Login = (props) => {
     const auth = getAuth();
+    const toast = useToast();
     const [email, setEmail] = useState('');
     const [password, setPass] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(email);
 
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            console.log(userCredential);
-            alert('Login successfull!');
-            navigate('/guide');
-          })
-          .catch((error) => {
+        try {
+            // Sign in user
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Check if email is verified
+            if (user.emailVerified) {
+                toast({
+                    title: "Login successful!",
+                    description: "Welcome",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: false,
+                }); 
+                setTimeout(() => {
+                  navigate('/guide'); // Redirect after 5 seconds
+              }, 1000); 
+            } else {
+                // Email is not verified, prompt the user to verify their email
+                toast({
+                    title: "Verify your email",
+                    description: "Please verify your email address. A verification link has been sent to your email.",
+                    status: "warning",
+                    duration: 7000,
+                    isClosable: true,
+                });
+                await sendEmailVerification(userCredential.user);
+                // Optional: Sign out the user or redirect them to a page informing them to check their email
+                await auth.signOut();
+                navigate('/login'); // Redirect back to login
+            }
+        } catch (error) {
             console.log(error);
-            alert('Login failed. Please try again.');
-          });
+            toast({
+                title: "Login failed",
+                description: "Login failed. Please check your email and password and try again.",
+                status: "error",
+                duration: 7000,
+                isClosable: true,
+            });
+        }
     };
 
     const handleRegisterClick = () => {
@@ -53,98 +79,37 @@ export const Login = (props) => {
         borderRadius="20px"
         width={400}>
             <Heading as="h1" mb={4}>Login</Heading>
-        <form className="login-form" action="" onSubmit={handleSubmit}>
-          <FormControl id="email" mb={4} isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
-              bg={'white'}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              placeholder="yourname@email.com"
-              name="email"
-            />
-          </FormControl>
-          <FormControl id="password" mb={4} isRequired>
-            <FormLabel>Password</FormLabel>
-            <Input
-              bg={'white'}
-              value={password}
-              onChange={(e) => setPass(e.target.value)}
-              type="password"
-              placeholder="********"
-              name="password"
-            />
-          </FormControl>
-          <Button className="login-btn" type="submit" colorScheme="blue" w="full" mb={4}>
-            <strong>Log In</strong>
-          </Button>
-        </form>
-        <Button className="link-btn" onClick={handleRegisterClick} colorScheme="teal" variant="link" w="full">
-          Don't have an account? Register here!
-        </Button>
-      </Box>
-      </Flex>
+            <form className="login-form" action="" onSubmit={handleSubmit}>
+              <FormControl id="email" mb={4} isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  bg={'white'}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  placeholder="yourname@email.com"
+                  name="email"
+                />
+              </FormControl>
+              <FormControl id="password" mb={4} isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  bg={'white'}
+                  value={password}
+                  onChange={(e) => setPass(e.target.value)}
+                  type="password"
+                  placeholder="********"
+                  name="password"
+                />
+              </FormControl>
+              <Button className="login-btn" type="submit" colorScheme="blue" w="full" mb={4}>
+                <strong>Log In</strong>
+              </Button>
+            </form>
+            <Button className="link-btn" onClick={handleRegisterClick} colorScheme="teal" variant="link" w="full">
+              Don't have an account? Register here!
+            </Button>
+        </Box>
+        </Flex>
     );
-}
-
-
-/*
-export const Login = (props) => {
-    const [email, setEmail] = useState('');
-    const [pass, setPass] = useState('');
-    const navigate = useNavigate();
-
-    const handleSubmit = async(e) => {
-        e.preventDefault();
-        console.log(email);
-
-        try {
-            const response = await fetch('http://localhost:9091/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({email, pass})
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to login');
-            }
-
-            setEmail('');
-            setPass('');
-
-            alert('Login successfull!');
-            navigate('/post');
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please try again.');
-        }
-
-        
-    }
-    
-
-
-    const handleRegisterClick = () => {
-        console.log('Button clicked!'); // 添加这行来检查点击事件是否被触发
-        props.onFormSwitch('register');
-        navigate('/register');
-    }
-
-    return (
-        <div className="auth-form-container">
-            <h2>Login</h2>
-          <form className="login-form" action="" onSubmit={handleSubmit}>
-              <label htmlFor="email">NUS Email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder = "nusnetid@u.nus.edu" id = "email" name = "email" /> 
-              <label htmlFor="password">Password</label>
-              <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="********" id="password" name="password" />  
-              <button className="login-dic" type="submit"><strong>Log In</strong></button>
-          </form>
-          <button className="link-btn" onClick={handleRegisterClick}>Don't have an account? Register here!</button>
-        </div>
-    );
-}
-    */
+};

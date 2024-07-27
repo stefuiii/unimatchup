@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { auth, database } from "../firebase-config.js";
-import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
 import { Box, Heading, Button, Stack, Text, ButtonGroup, HStack, ChakraProvider, Grid, Spinner } from "@chakra-ui/react";
-import { CalendarIcon, InfoIcon } from "@chakra-ui/icons";
+import { CalendarIcon, InfoIcon, InfoOutlineIcon } from "@chakra-ui/icons";
 import { Card, CardBody, CardFooter, useDisclosure, useToast } from '@chakra-ui/react';
 import "../format/oneLineDescription.css";
 import EventDetailsModal from "./EventDetailsModal.jsx";
@@ -11,8 +11,21 @@ import { AiOutlineTeam } from "react-icons/ai";
 
 const ShowPosts = ({ post, onDelete }) => {
   const toast = useToast();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isDiscussionAllowed, setIsDiscussionAllowed] = useState(false);
 
   const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
+
+  useEffect(() => {
+    const eventTime = post.Date.toDate();
+    const oneHourBeforeEvent = new Date(eventTime.getTime() - 60 * 60 * 1000);
+    
+    if (currentDate >= oneHourBeforeEvent && currentDate <= eventTime) {
+      setIsDiscussionAllowed(true);
+    } else {
+      setIsDiscussionAllowed(false);
+    }
+  }, [currentDate, post.Date]);
 
   const deleteEvent = async () => {
     try {
@@ -69,6 +82,100 @@ const ShowPosts = ({ post, onDelete }) => {
     }
   }
 
+  const handleStartDiscussion = async () => {
+    try {
+      const eventRef = doc(database, post.collection, post.docID);
+      const eventDoc = await getDoc(eventRef);
+      const eventData = eventDoc.data();
+  
+      if (eventData.chatRoomId) {
+        toast({
+          title: 'Discussion Already Started',
+          description: 'The chat room for this event has already been created.',
+          status: 'info',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        const members = post.Members.map(memberRef => memberRef.id);
+        await createChatRoom(post.docID, members);
+        toast({
+          title: 'Discussion Started',
+          description: 'Chat room created successfully.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error starting discussion:', error);
+      toast({
+        title: 'Error',
+        description: 'There was an error starting the discussion.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+  
+
+  const createChatRoom = async (postId, members) => {
+    try {
+      const user = auth.currentUser;
+      const eventRef = doc(database, post.collection, postId);
+      const eventDoc = await getDoc(eventRef);
+      const eventData = eventDoc.data();
+      const eventTitle = eventData.Title; 
+  
+      const unreadMessages = members.reduce((acc, member) => {
+        acc[member] = 0;
+        return acc;
+      }, {});
+  
+      const chatRoomRef = await addDoc(collection(database, 'chatRooms'), {
+          postId: postId,
+          collection: post.collection,
+          members: [...members,],
+          name: eventTitle, 
+          lastMessage: '',
+          lastMessageSender: '',
+          lastMessageTime: new Date(),
+          unreadMessages
+      });
+  
+      const chatRoomId = chatRoomRef.id;
+      const messagesCollectionRef = collection(chatRoomRef, 'messages');
+      await addDoc(messagesCollectionRef, {}); 
+  
+      await updateDoc(eventRef, {
+          chatRoomId: chatRoomId
+      });
+  
+      await updateDoc(chatRoomRef, {
+          chatRoomId: chatRoomId
+      });
+    
+      for (const member of [...members, user.uid]) {
+        const userProfileRef = doc(database, 'userProfile', member);
+        await updateDoc(userProfileRef, {
+            chatRooms: arrayUnion(chatRoomId)
+        });
+
+        toast({
+            title: "Chat Room Created",
+            description: `The chatroom for "${eventTitle}" has been built up.`,
+            status: "success",
+            duration: null,
+            isClosable: true,
+        });
+    }
+      console.log('Chat room created successfully with ID:', chatRoomId);
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+    }
+  };
+
   const date = post.Date.toDate().toLocaleString();
   return (
     <Card maxW='sm' width="150px" height="250px" justifyContent={'center'}>
@@ -92,17 +199,28 @@ const ShowPosts = ({ post, onDelete }) => {
         </HStack>
       </CardBody>
       <CardFooter style={{ marginTop: '-30px' }} justifyContent={'left'}>
-        <ButtonGroup spacing='2' justifyContent={'flex-start'}>
-          <>
+        <Stack spacing={2} align="flex-start">
+          <HStack spacing={2}>
             <Button size={'xs'} onClick={onModalOpen} colorScheme='blue' fontSize="xs">
               Details
             </Button>
-          </>
-          <Button onClick={deleteEvent} size={'xs'} colorScheme="red" fontSize="xs">
-            Delete
+            <Button onClick={deleteEvent} size={'xs'} colorScheme="red" fontSize="xs">
+              Delete
+            </Button>
+          </HStack>
+          <Button
+            onClick={handleStartDiscussion}
+            size={'xs'}
+            fontSize="xs"
+            colorScheme={isDiscussionAllowed ? "orange" : "gray"}
+            isDisabled={!isDiscussionAllowed}
+            alignSelf="center"
+            width="full"
+          >
+            Start Discussion
           </Button>
-          <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
-        </ButtonGroup>
+        </Stack>
+        <EventDetailsModal isOpen={isModalOpen} onClose={onModalClose} post={post} />
       </CardFooter>
     </Card>
   );
@@ -173,6 +291,20 @@ export const ShowAll = () => {
           alignItems: 'center',
           flexDirection: 'column'
         }}>
+          <Stack spacing={5}>
+          <HStack>
+          <InfoOutlineIcon color='gray' size='xs' />
+          <Text fontSize='xs'>
+            As the event creator, deleting the event will remove it and its chatroom for <b>all its current participants</b>.
+          </Text>
+          </HStack>
+          <HStack>
+          <InfoOutlineIcon color='gray' size='xs' />
+          <Text fontSize='xs'>
+            You can choose to start your discussion with current members <b>1 hour</b> before the event time <b>no matter there are enough participants or not</b>.
+          </Text>
+          </HStack>
+          </Stack>
         <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} onDelete={removePost} />
