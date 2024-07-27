@@ -104,6 +104,7 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
                 <TabList>
                   <Tab>Post</Tab>
                   <Tab>Contributor Info</Tab>
+                  <Tab>Linked Event</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -160,6 +161,30 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
                     ) : (
                       <Text>No organizer data available</Text>
                     )}
+                  </TabPanel>
+                  <TabPanel>
+                  {eventData ? (
+    <>
+      <HStack mt={3} mb={3}>
+        <Heading size={'sm'}>Title</Heading>
+        <Text>{eventData.Title || "No Title"}</Text>
+      </HStack>
+      <VStack alignItems={'left'} spacing={2} mb={3}>
+        <Heading size={'sm'}>Description</Heading>
+        <Text>{eventData.Description || "No Description"}</Text>
+      </VStack>
+      <HStack mb={3}>
+        <Heading size={'sm'}>Date</Heading>
+        <Text>{eventData.Date ? eventData.Date.toDate().toLocaleString() : "No Date"}</Text>
+      </HStack>
+      <HStack>
+        <Heading size={'sm'}>Location</Heading>
+        <Text>{eventData.Location || "No Location"}</Text>
+      </HStack>
+    </>
+  ) : (
+    <Text>Loading event data...</Text>
+  )}
                   </TabPanel>
                 </TabPanels>
               </Tabs>
