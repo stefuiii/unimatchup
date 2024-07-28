@@ -26,6 +26,7 @@ import {
 } from '@chakra-ui/react'
 import { ShowAll } from "./CreatedEvents"
 import { ShowAllJoint } from "./JointEvents"
+import { ShowAllForum } from "./MyForumPost";
 import { ChatIcon } from "@chakra-ui/icons";
 import { useNavigate } from 'react-router-dom';
 import headIcon from "../icons/工作.svg"
@@ -165,6 +166,10 @@ export const Home = () => {
     navigate('/landing');
   };
 
+  const handleForum = () => {
+    navigate('/forum');
+  };
+
   return (
     <ChakraProvider>
       <HStack spacing={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
@@ -175,7 +180,7 @@ export const Home = () => {
         </Button>
        </Tooltip>
        <Tooltip hasArrow label="Profile" aria-label="Profile Tooltip" bg="white" color="black">
-         <Button onClick={handleModalOpen} bg={'none'} mb={5}>
+         <Button onClick={handleModalOpen} bg={'none'} mb={5} marginEnd={-3}>
           <img src={profile} alt="Avatar" width="30" height="30" />
          </Button>
        </Tooltip>
@@ -226,6 +231,17 @@ export const Home = () => {
         overflow="auto"
         className="container"
       >
+        <Box 
+      width="1300px"
+      height="auto"
+      justifyContent={'center'}
+      alignContent={'center'}
+      display={'flex'}
+      p={4}
+      mt={8}
+      borderRadius={20}
+      bg="rgba(255, 255, 255, 0.4)"
+      boxShadow="md">
         <Box
           width="70%"
           height="70%"
@@ -234,20 +250,21 @@ export const Home = () => {
           mt={10}
         >
           <HStack spacing={35} position="relative" top="-50px">
-            <img src={headIcon} alt="Avatar" width="560" height="550" />
+            <img src={headIcon} alt="Avatar" width="500" height="550" />
             <Stack marginInline={0} spacing={5} mb={-10}>
               <img src={smalldeco} alt="Avatar" width="50" height="50" />
-              <Heading lineHeight='tall' whiteSpace='pre-line' fontSize="5xl">
+              <Heading lineHeight='tall' whiteSpace='pre-line' fontSize="4xl">
                 <Highlight
                   query='Best-fit'
                   styles={{ px: '2', py: '1', rounded: 'full', bg: '#FFBF6A' }}
                 >
-                  {`With us to find your\nBest-fit Buddies!`}
+                  {`With us to find your\n Best-fit  Buddies`}
                 </Highlight>
               </Heading>
+              <ButtonGroup spacing={5} width="320px">
               <Popover>
                 <PopoverTrigger>
-                  <Button bg={'white'} borderRadius={'10'}>Post Here</Button>
+                  <Button width="100%" bg={'white'} borderRadius={'10'}>Post Here</Button>
                 </PopoverTrigger>
                 <Portal>
                   <PopoverContent>
@@ -280,16 +297,23 @@ export const Home = () => {
                   </PopoverContent>
                 </Portal>
               </Popover>
+              <Button width="100%" bg={'white'} borderRadius={'10'} onClick={handleForum}>
+                View Community
+              </Button>
+              </ButtonGroup>
+              
+              <Box justifyContent={'center'} alignContent={'center'}>
               <Box position='relative' padding='5'>
                 <Divider borderColor='gray' />
-                <AbsoluteCenter bg='#FFEFDA' px='5'>
+                <AbsoluteCenter  bg="rgba(253, 246, 234)" px='5'>
                   Or
                 </AbsoluteCenter>
               </Box>
-              <Box mt={-5}>
-                <Text color={'gray.500'} position='relative' fontSize="lg">
+              <Box ml={5}>
+                <Text color={'gray.500'} position='relative' fontSize="sm">
                   Click entries below to search for your events
                 </Text>
+                </Box>
               </Box>
             </Stack>
           </HStack>
@@ -301,7 +325,7 @@ export const Home = () => {
                 { src: sportIcon, alt: "Sports", buttonText: "Sports", onClick: handleSportClick },
                 { src: groupIcon, alt: "Tut Group", buttonText: "Tut Group", onClick: handleGroupClick }
               ].map((item, index) => (
-                <Card key={index} maxW="sm" width={["20%", "20%", "20%", "20%"]} height="200px" justifyContent="center">
+                <Card key={index} maxW="sm" width={["20%", "20%", "20%", "20%"]} height="180px" justifyContent="center">
                   <CardBody display="flex" flexDirection="column" justifyContent="center" alignItems="center" alignContent="center">
                     <Stack mt='1' spacing='3' align="center">
                       <Image height={"80%"} src={item.src} alt={item.alt} width="80%" objectFit="contain" />
@@ -315,6 +339,7 @@ export const Home = () => {
                 </Card>
               ))}
             </HStack>
+            </Box>
           </Box>
         </Box>
         <Drawer onClose={onDrawerClose} isOpen={isDrawerOpen} size={'sm'}>
@@ -334,6 +359,7 @@ export const Home = () => {
                 <TabList>
                   <Tab>Created</Tab>
                   <Tab>Joined</Tab>
+                  <Tab>Forum Posts</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -341,6 +367,9 @@ export const Home = () => {
                   </TabPanel>
                   <TabPanel>
                     <p><ShowAllJoint /></p>
+                  </TabPanel>
+                  <TabPanel>
+                    <p><ShowAllForum /></p>
                   </TabPanel>
                 </TabPanels>
               </Tabs>

@@ -20,7 +20,7 @@ import { Guide } from './components/guide';
 import { Chatsoverview} from './components/Chatsoverview';
 import { ChatPage } from './components/ChatPage';
 import { TermsOfService } from "./components/Terms"; 
-
+import { Forum } from './components/Forum';
 
 
 function App() {
@@ -52,6 +52,8 @@ function App() {
         <Route path="/chatsoverview" element={<Chatsoverview />} />
         <Route path="/chatpage/:chatRoomId" element={<ChatPage />} />
         <Route path="/terms-of-service" element={<TermsOfService/>} />
+        <Route path="/forum" element={<Forum/>} />
+        
       </Routes>
     </Router>
     </ChakraProvider>
