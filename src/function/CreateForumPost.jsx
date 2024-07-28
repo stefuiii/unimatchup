@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { database } from "../firebase-config";
 import { Box, Input, Textarea, Button, useToast, Stack, IconButton, Select, ButtonGroup } from "@chakra-ui/react";
 import { uploadImage } from "../function/UploadImage.jsx";
@@ -45,6 +45,7 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
   const [image, setImage] = useState(null);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userDoc, setUserDoc] = useState()
   const toast = useToast();
 
@@ -71,6 +72,7 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     const newPostData = {
       Title: title,
@@ -81,7 +83,8 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
       forumPostID: "",
       Contributor: "",
       likes: 0,
-      comments: []
+      comments: [],
+      likedBy:[]
     };
 
     
@@ -91,13 +94,17 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
       newPostData.Image = imageUrl;
     }
 
-    const docRef = await addDoc(collection(database, "forumPost"), newPostData);
+    try {
+        const docRef = await addDoc(collection(database, "forumPost"), newPostData);
     const forumPostID = docRef.id;
     await updateDoc(docRef, { forumPostID });
-
-    const userDoc = await getDoc(doc(database, "userProfile", userID));
+;
     const userRef = doc(database, "userProfile", userID);
     await updateDoc(docRef, { Contributor: userRef });
+    await updateDoc(userRef, {
+        forumPosts: arrayUnion(docRef)
+    });
+
 
 
     toast({
@@ -112,7 +119,15 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
     setRating(5);
     setImage(null);
     setSelectedEvent("");
-  };
+    setIsSubmitting(false);
+   } catch (error) {
+          console.error("Error writing document: ", error);
+        } finally {
+          setIsSubmitting(false);
+        }
+   }
+    
+  
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -208,8 +223,8 @@ export const CreateForumPost = ({ isOpen, onClose, userID }) => {
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
-            <Button variant="ghost" colorScheme="blue" mr={3} onClick={handleSubmit}>
-              Share Your Experience
+            <Button variant="ghost" colorScheme="blue" mr={3} onClick={handleSubmit} isDisabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Share Your Experience!'}
             </Button>
           </ButtonGroup>
         </ModalFooter>

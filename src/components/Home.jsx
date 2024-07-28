@@ -26,6 +26,7 @@ import {
 } from '@chakra-ui/react'
 import { ShowAll } from "./CreatedEvents"
 import { ShowAllJoint } from "./JointEvents"
+import { ShowAllForum } from "./MyForumPost";
 import { ChatIcon } from "@chakra-ui/icons";
 import { useNavigate } from 'react-router-dom';
 import headIcon from "../icons/工作.svg"
@@ -358,6 +359,7 @@ export const Home = () => {
                 <TabList>
                   <Tab>Created</Tab>
                   <Tab>Joined</Tab>
+                  <Tab>Forum Posts</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -365,6 +367,9 @@ export const Home = () => {
                   </TabPanel>
                   <TabPanel>
                     <p><ShowAllJoint /></p>
+                  </TabPanel>
+                  <TabPanel>
+                    <p><ShowAllForum /></p>
                   </TabPanel>
                 </TabPanels>
               </Tabs>

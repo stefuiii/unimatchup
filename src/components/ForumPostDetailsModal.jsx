@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, HStack, VStack, Heading, Text, ButtonGroup, IconButton, useDisclosure } from "@chakra-ui/react";
-import { Tabs, Tab, TabPanel, TabPanels, TabList, Spinner, Tag, Image, Textarea, Input } from "@chakra-ui/react";
-import { getDoc, doc, updateDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, ModalFooter, Button, HStack, VStack, Heading, Text, ButtonGroup, IconButton, useDisclosure } from "@chakra-ui/react";
+import { Tabs, Tab, TabPanel, TabPanels, TabList, Spinner, Tag, Image, Input } from "@chakra-ui/react";
+import { getDoc, doc, updateDoc, onSnapshot, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { database } from "../firebase-config.js";
-import { AiOutlineTeam, AiOutlineUser } from 'react-icons/ai'; // 使用 AiOutlineUser 作为图标
-import ProfileCard from './ProfileCard'; // 假设 ProfileCard 位于同一目录下
 import { FaStar, FaThumbsUp } from "react-icons/fa";
 
 const StarRating = ({ max = 5, rating }) => {
@@ -34,6 +33,10 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
   const [likes, setLikes] = useState(0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [userHasLiked, setUserHasLiked] = useState(false);
+  const [currentUserNickname, setCurrentUserNickname] = useState("");
+  const auth = getAuth();
+  const currentUserId = auth.currentUser.uid;
 
   useEffect(() => {
     const fetchOrganizerData = async () => {
@@ -59,30 +62,56 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
       const likesRef = doc(database, "forumPost", forumData.forumPostID);
       onSnapshot(likesRef, (doc) => {
         if (doc.exists()) {
-          setLikes(doc.data().likes || 0);
-          setComments(doc.data().comments || []);
+          const data = doc.data();
+          setLikes(data.likes || 0);
+          setComments(data.comments || []);
+          setUserHasLiked(data.likedBy?.includes(currentUserId) || false);
         }
       });
+    };
+
+    const fetchCurrentUserNickname = async () => {
+      if (currentUserId) {
+        const userRef = doc(database, "users", currentUserId);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setCurrentUserNickname(userData.nickName || "");
+        }
+      }
     };
 
     if (isOpen) {
       fetchOrganizerData();
       fetchLikesAndComments();
+      fetchCurrentUserNickname();
     }
-  }, [isOpen, forumData]);
+  }, [isOpen, forumData, currentUserId]);
 
   const handleLike = async () => {
     const postRef = doc(database, "forumPost", forumData.forumPostID);
-    await updateDoc(postRef, {
-      likes: likes + 1
-    });
+
+    if (userHasLiked) {
+      // Remove like
+      await updateDoc(postRef, {
+        likes: likes - 1,
+        likedBy: arrayRemove(currentUserId)
+      });
+    } else {
+      // Add like
+      await updateDoc(postRef, {
+        likes: likes + 1,
+        likedBy: arrayUnion(currentUserId)
+      });
+    }
+    setUserHasLiked(!userHasLiked);
   };
 
   const handleAddComment = async () => {
     if (newComment.trim() === "") return;
 
     const postRef = doc(database, "forumPost", forumData.forumPostID);
-    const updatedComments = [...comments, newComment];
+    const updatedComments = [...comments, { text: newComment, nickname: currentUserNickname }];
     await updateDoc(postRef, {
       comments: updatedComments
     });
@@ -130,9 +159,11 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
                     </VStack>
                     <HStack mt={3} mb={3}>
                       <Button onClick={handleLike} leftIcon={<FaThumbsUp />}>
-                        Like ({likes})
+                        {userHasLiked ? `Unlike (${likes})` : `Like (${likes})`}
                       </Button>
                     </HStack>
+                   
+
                   </TabPanel>
                   <TabPanel>
                     {conData ? (
@@ -159,32 +190,32 @@ const ForumDetailModal = ({ isOpen, onClose, forumData }) => {
                         </VStack>
                       </>
                     ) : (
-                      <Text>No organizer data available</Text>
+                      <Text>No data available</Text>
                     )}
                   </TabPanel>
                   <TabPanel>
-                  {eventData ? (
-    <>
-      <HStack mt={3} mb={3}>
-        <Heading size={'sm'}>Title</Heading>
-        <Text>{eventData.Title || "No Title"}</Text>
-      </HStack>
-      <VStack alignItems={'left'} spacing={2} mb={3}>
-        <Heading size={'sm'}>Description</Heading>
-        <Text>{eventData.Description || "No Description"}</Text>
-      </VStack>
-      <HStack mb={3}>
-        <Heading size={'sm'}>Date</Heading>
-        <Text>{eventData.Date ? eventData.Date.toDate().toLocaleString() : "No Date"}</Text>
-      </HStack>
-      <HStack>
-        <Heading size={'sm'}>Location</Heading>
-        <Text>{eventData.Location || "No Location"}</Text>
-      </HStack>
-    </>
-  ) : (
-    <Text>Loading event data...</Text>
-  )}
+                    {eventData ? (
+                      <>
+                        <HStack mt={3} mb={3}>
+                          <Heading size={'sm'}>Title</Heading>
+                          <Text>{eventData.Title || "No Title"}</Text>
+                        </HStack>
+                        <VStack alignItems={'left'} spacing={2} mb={3}>
+                          <Heading size={'sm'}>Description</Heading>
+                          <Text>{eventData.Description || "No Description"}</Text>
+                        </VStack>
+                        <HStack mb={3}>
+                          <Heading size={'sm'}>Date</Heading>
+                          <Text>{eventData.Date ? eventData.Date.toDate().toLocaleString() : "No Date"}</Text>
+                        </HStack>
+                        <HStack>
+                          <Heading size={'sm'}>Location</Heading>
+                          <Text>{eventData.Location || "No Location"}</Text>
+                        </HStack>
+                      </>
+                    ) : (
+                      <Text>Loading event data...</Text>
+                    )}
                   </TabPanel>
                 </TabPanels>
               </Tabs>

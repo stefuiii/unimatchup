@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { database } from "../firebase-config.js";
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { query, collection, where, getDocs} from "firebase/firestore";
 import { Box, Heading, FormControl, FormLabel, Input, Button, Flex, useToast } from "@chakra-ui/react";
 
 export const Login = (props) => {
@@ -15,47 +17,66 @@ export const Login = (props) => {
         console.log(email);
 
         try {
-            // Sign in user
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+          // Sign in user
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
 
-            // Check if email is verified
-            if (user.emailVerified) {
-                toast({
-                    title: "Login successful!",
-                    description: "Welcome",
-                    status: "success",
-                    duration: 5000,
-                    isClosable: false,
-                }); 
-                setTimeout(() => {
-                  navigate('/guide'); // Redirect after 5 seconds
-              }, 1000); 
-            } else {
-                // Email is not verified, prompt the user to verify their email
-                toast({
-                    title: "Verify your email",
-                    description: "Please verify your email address. A verification link has been sent to your email.",
-                    status: "warning",
-                    duration: 7000,
-                    isClosable: true,
-                });
-                await sendEmailVerification(userCredential.user);
-                // Optional: Sign out the user or redirect them to a page informing them to check their email
-                await auth.signOut();
-                navigate('/login'); // Redirect back to login
-            }
-        } catch (error) {
-            console.log(error);
-            toast({
-                title: "Login failed",
-                description: "Login failed. Please check your email and password and try again.",
-                status: "error",
-                duration: 7000,
-                isClosable: true,
-            });
-        }
-    };
+          // Check if email is verified
+          if (user.emailVerified) {
+              // Check if user profile exists
+              const userProfileQuery = query(collection(database, "userProfile"), where("uid", "==", user.uid));
+              const querySnapshot = await getDocs(userProfileQuery);
+              
+              if (querySnapshot.empty) {
+                  // If no user profile exists, navigate to createProfile
+                  toast({
+                      title: "Login successful!",
+                      description: "Welcome! Please create your profile.",
+                      status: "success",
+                      duration: 5000,
+                      isClosable: false,
+                  });
+                  setTimeout(() => {
+                      navigate('/createprofile'); // Redirect to createProfile
+                  }, 1000);
+              } else {
+                  // If user profile exists, navigate to guide
+                  toast({
+                      title: "Login successful!",
+                      description: "Welcome back!",
+                      status: "success",
+                      duration: 5000,
+                      isClosable: false,
+                  });
+                  setTimeout(() => {
+                      navigate('/home'); // Redirect to guide
+                  }, 1000);
+              }
+          } else {
+              // Email is not verified, prompt the user to verify their email
+              toast({
+                  title: "Verify your email",
+                  description: "Please verify your email address. A verification link has been sent to your email.",
+                  status: "warning",
+                  duration: 7000,
+                  isClosable: true,
+              });
+              await sendEmailVerification(userCredential.user);
+              // Optional: Sign out the user or redirect them to a page informing them to check their email
+              await auth.signOut();
+              navigate('/login'); // Redirect back to login
+          }
+      } catch (error) {
+          console.log(error);
+          toast({
+              title: "Login failed",
+              description: "Login failed. Please check your email and password and try again.",
+              status: "error",
+              duration: 7000,
+              isClosable: true,
+          });
+      }
+  };
 
     const handleRegisterClick = () => {
         console.log('Button clicked!'); 

@@ -4,7 +4,8 @@ import { collection, orderBy, getDocs, query } from "firebase/firestore";
 import { auth, database } from "../firebase-config";
 import { Box, Heading, Button, Stack, Text, ButtonGroup,
     HStack, ChakraProvider, Image, IconButton,
-    Flex, useToast, useDisclosure, Spinner, Tooltip, Grid, GridItem } from "@chakra-ui/react";
+    Flex, useToast, useDisclosure, Spinner, Tooltip, Grid, GridItem, 
+    VStack} from "@chakra-ui/react";
 import { useNavigate } from 'react-router-dom';
 import { Card, CardBody, CardFooter, InputGroup, InputLeftElement, Input } from '@chakra-ui/react';
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
@@ -13,6 +14,7 @@ import { FaStar } from "react-icons/fa";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import ForumDetailModal from "./ForumPostDetailsModal.jsx";
 import forumHeading from "../icons/community-comments-svgrepo-com.svg";
+import unilogo from "../icons/工作.svg"
 
 const StarRating = ({ max = 5, rating }) => {
     return (
@@ -134,7 +136,8 @@ export const Forum = () => {
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     
     const filteredPosts = posts.filter(post =>
-        post.Title.toLowerCase().includes(search.toLowerCase())
+        post.Title.toLowerCase().includes(search.toLowerCase()) ||
+        post.Content.toLowerCase().includes(search.toLowerCase())
     );
     const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
@@ -155,13 +158,13 @@ export const Forum = () => {
             <HStack p={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'center'}>
                 <Box mr="auto">
                     <Tooltip hasArrow label="Return Home" aria-label="Chat Tooltip" bg="white" color="black">
-                        <ArrowBackIcon color="#E3C195" boxSize={10} onClick={() => navigate('/home')} />
+                        <ArrowBackIcon color="white" boxSize={10} onClick={() => navigate('/home')} />
                     </Tooltip>
                 </Box>
+                <HStack spacing={'5'} ml={10} mr={5}>
                 <Box mt={0}>
-                    <img src={forumHeading} alt="Avatar" width="100" height="50" />
+                    <img src={forumHeading} alt="Avatar" width="50" height="50" />
                 </Box>
-                <HStack spacing={'2'} ml={10} mr={5}>
                     <InputGroup>
                         <InputLeftElement pointerEvents='none'>
                             <SearchIcon marginTop={'3'} color='gray.300' />
@@ -178,7 +181,9 @@ export const Forum = () => {
                 </HStack>
                 <Box mr={10}>
                 <>
-                    <AddIcon boxSize={6} color={'white'} onClick={onModalOpen} />
+                    <Button borderRadius={10} bg={"white"} onClick={onModalOpen}>
+                        Share Your Story   
+                    </Button>
                     <CreateForumPost isOpen={isModalOpen} onClose={onModalClose} userID={userID} />
                 </>
                 </Box>
@@ -189,6 +194,7 @@ export const Forum = () => {
 
                 <HStack>
                 </HStack>
+                <Stack spacing={10}>
                 <>
                     {loading ? (
                         <Box textAlign="center" p={4}>
@@ -204,17 +210,18 @@ export const Forum = () => {
                                     </GridItem>
                                 ))}
                             </Grid>
-                            <Box position="absolute" bottom="10" width="100%" py={4}>
+                            <Box position="absolute" bottom={2} width="100%" py={4}>
                                 <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" marginTop="30px">
                                     <ButtonGroup spacing='4'>
-                                        <Button onClick={handlePrevPage} disabled={currentPage === 1}>Previous</Button>
-                                        <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(filteredPosts.length / postsPerPage)}>Next</Button>
+                                        <Button bg={'#E8D4B8'} color={'white'} onClick={handlePrevPage} disabled={currentPage === 1}>Previous</Button>
+                                        <Button bg={'#E8D4B8'} color={'white'} onClick={handleNextPage} disabled={currentPage === Math.ceil(filteredPosts.length / postsPerPage)}>Next</Button>
                                     </ButtonGroup>
                                 </Box>
                             </Box>
                         </>
                     )}
                 </>
+                </Stack>
                 <HStack width="1300px" spacing={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'left'} alignItems={'start'}>
                 </HStack>
             </Flex>
