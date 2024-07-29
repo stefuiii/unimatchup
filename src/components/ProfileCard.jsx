@@ -55,6 +55,10 @@ const ProfileCard = ({ isOpen, onClose, userID}) => {
                 </HStack>
                 <HStack mb={3}>
                   <Heading size={'sm'}>Major</Heading>
+                  <Text>{orgData.Gender}</Text>
+                </HStack>
+                <HStack mb={3}>
+                  <Heading size={'sm'}>Major</Heading>
                   <Text>{orgData.Major}</Text>
                 </HStack>
                 <VStack alignItems={'left'} spacing={2} mb={3}>
