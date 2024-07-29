@@ -10,7 +10,7 @@ import { collection, query, where, onSnapshot, doc, getDocs } from 'firebase/fir
 import { auth, database } from '../firebase-config';
 import myAvatar from "../icons/avatar13.svg";
 import dayjs from 'dayjs';
-import '../format/chatStyles.css'; 
+import '../format/chatStyles.css';
 
 export const Chatsoverview = () => {
   const [search, setSearch] = useState('');
