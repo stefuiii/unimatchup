@@ -291,6 +291,13 @@ export const ShowAll = () => {
           alignItems: 'center',
           flexDirection: 'column'
         }}>
+          <Text fontSize='xs'>
+            As the event creator, deleting the event will remove it and its chatroom for <b>all its current participants</b>.
+          </Text>
+          <Box height='10px' />
+          <Text fontSize='xs'>
+            You can choose to start your discussion with current members <b>1 hour</b> before the event time <b>no matter there are enough participants or not</b>.
+          </Text>
         <Grid templateColumns="repeat(2, 1fr)" gap={6} marginTop={5}>
           {currentPosts.map((post, index) => (
             <ShowPosts key={index} post={post} onDelete={removePost} />
