@@ -172,7 +172,8 @@ export const Home = () => {
 
   return (
     <ChakraProvider>
-      <HStack spacing={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'}>
+      <Box bg={'#E8D4B8'}>
+      <HStack spacing={3} bg={'#E8D4B8'} display={'flex'} justifyContent={'right'} alignItems={'end'} width="100vw">
        <>
        <Tooltip hasArrow label="Log Out" aria-label="Log Out Tooltip" bg="white" color="black">
         <Button onClick={handleLogout} bg="none" mb={5} mr={-5}>
@@ -219,6 +220,7 @@ export const Home = () => {
       {`Your Page`}
       </Button>
     </HStack>
+    </Box>
       <Flex
         bg={"#FFEFDA"}
         width='100vw'

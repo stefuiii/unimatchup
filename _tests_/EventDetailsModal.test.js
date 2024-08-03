@@ -65,6 +65,7 @@ beforeAll(() => {
     getDoc: mockGetDoc,
     doc: jest.fn((_, collection, id) => ({ collection, id })),
   }));
+
 });
 
 describe('EventDetailsModal', () => {

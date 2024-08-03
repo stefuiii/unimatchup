@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Find Your Best-fit Buddies with UniMatchUp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A uni-wide platform built using React
 
 ## Available Scripts
 
