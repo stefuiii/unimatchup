@@ -2,9 +2,9 @@
 
 A uni-wide platform built using React
 
-## Available Scripts
+## Try our website
 
-In the project directory, you can run:
+Feel free to visit our website (https://unimatchup-backup.web.app/)
 
 ### `npm start`
 
