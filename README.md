@@ -7,7 +7,8 @@ We aim to embrace the convenience when students need to grouping for activities 
 
 Feel free to visit our website (https://unimatchup-backup.web.app/) and try features.\
 To satisfy the user stories, we restrict the user scope only for NUS students. You can sign up using your NUS email.\
-If you're not students from NUS but still wanna try our UniMatch Up, please contact with [Stephanie](stephaniejiang15@gmail.com) to receive your testing account.
+If you're not students from NUS but still wanna try our UniMatch Up, please contact with me via email:e-mail:
+(stephaniejiang15@gmail.com) to receive your testing account.
 
 ## Features :bookmark_tabs:
 
@@ -20,7 +21,8 @@ If you're not students from NUS but still wanna try our UniMatch Up, please cont
 
 ## More Information
 
-Read our documentation(https://docs.google.com/document/d/15YkKGbjHmYuV1J5tRLn6PJNEyOObB265ltopXp2MHXs/edit#heading=h.atfl8uy605l0).\
+Read our documentation
+(https://docs.google.com/document/d/15YkKGbjHmYuV1J5tRLn6PJNEyOObB265ltopXp2MHXs/edit#heading=h.atfl8uy605l0) .\
 Or watch the video for guidance(https://drive.google.com/file/d/1fv_6chz6rhlcgd6gQQqvVtE6E3Ih88Nz/view?usp=drive_link)
 
 
