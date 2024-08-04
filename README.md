@@ -7,7 +7,7 @@ We aim to embrace the convenience when students need to grouping for activities 
 
 Feel free to visit our website (https://unimatchup-backup.web.app/) and try features.\
 To satisfy the user stories, we restrict the user scope only for NUS students. You can sign up using your NUS email.\
-If you're not students from NUS but still wanna try our UniMatch Up, please contact with me via email:e-mail:
+If you're not students from NUS but still wanna try our UniMatch Up, please contact with me via email
 (stephaniejiang15@gmail.com) to receive your testing account.
 
 ## Features :bookmark_tabs:
@@ -19,11 +19,12 @@ If you're not students from NUS but still wanna try our UniMatch Up, please cont
 5. A community where everyone can share and rate their experience when grouping with others.
 6. A customizable user profile to better describe themselves and understand the characteristics of potential groupmates, helping them find the best-fit teammates.
 
-## More Information
+## More Information :speech_balloon:
 
-Read our documentation
-(https://docs.google.com/document/d/15YkKGbjHmYuV1J5tRLn6PJNEyOObB265ltopXp2MHXs/edit#heading=h.atfl8uy605l0) .\
-Or watch the video for guidance(https://drive.google.com/file/d/1fv_6chz6rhlcgd6gQQqvVtE6E3Ih88Nz/view?usp=drive_link)
+Read our documentation \
+(https://docs.google.com/document/d/15YkKGbjHmYuV1J5tRLn6PJNEyOObB265ltopXp2MHXs/edit#heading=h.atfl8uy605l0) \
+Or watch the video for guidance \
+(https://drive.google.com/file/d/1fv_6chz6rhlcgd6gQQqvVtE6E3Ih88Nz/view?usp=drive_link)
 
 
 ### `npm run eject`
@@ -36,32 +37,3 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
